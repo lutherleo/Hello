@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% set code = "500" %}
+  {% set heading = error or _('Internal server error') %}
+  {% set detail = _('Something broke on our side. The organizers have been notified by the logs.') %}
+  {% include "components/error_sheet.html" %}
+{% endblock %}

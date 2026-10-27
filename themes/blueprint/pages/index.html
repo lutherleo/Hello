@@ -1,0 +1,112 @@
+<!--
+  Cover sheet for the Blueprint theme.
+
+  Paste this into Admin Panel -> Pages -> "index" (format: HTML). Everything in
+  [brackets] is a placeholder for the organizers to fill in. The countdown
+  reads the start and end times set in Admin Panel -> Config -> Start/End
+  Time, so it needs no editing.
+-->
+<section class="bp-hero">
+  <div class="bp-hero__grid">
+    <div>
+      <p class="bp-label">Drawing no. CSAW-26 &middot; Sheet S-00 &middot; Cover</p>
+      <h1 class="bp-hero__title">CSAW<br>CTF <em>&rsquo;26</em></h1>
+      <p class="bp-hero__lede">
+        Forty-eight hours of reversing, pwn, web, crypto and forensics from the
+        OSIRIS Lab at NYU Tandon. Every challenge is a part on this drawing.
+        Find the flag, stamp it captured.
+      </p>
+      <div class="bp-hero__actions">
+        <a class="btn btn-primary btn-lg" href="/challenges">Open the drawing</a>
+        <a class="btn btn-secondary btn-lg" href="/register">Get a permit</a>
+      </div>
+    </div>
+
+    <svg class="bp-hero__drawing" viewBox="0 0 520 430" role="img"
+         aria-labelledby="bp-cover-title" fill="none" stroke="currentColor" stroke-width="1.4">
+      <title id="bp-cover-title">Technical drawing of a capture flag on a pole, with dimensions</title>
+      <defs>
+        <marker id="bp-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9"
+                orient="auto-start-reverse">
+          <path d="M0 1.5 10 5 0 8.5z" fill="currentColor" stroke="none"/>
+        </marker>
+        <pattern id="bp-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)">
+          <path d="M0 0v8" stroke="currentColor" stroke-width="1" opacity=".6"/>
+        </pattern>
+      </defs>
+
+      <!-- Centre line of the pole -->
+      <path d="M114 22v380" stroke-dasharray="16 4 3 4" stroke-width=".8" opacity=".7"/>
+
+      <!-- Pole -->
+      <rect x="108" y="40" width="12" height="350"/>
+      <circle cx="114" cy="34" r="7"/>
+
+      <!-- Flag body with swallowtail notch -->
+      <path d="M120 54h292l-56 82 56 82H120z" stroke-width="2"/>
+      <!-- Hidden edge: cloth thickness -->
+      <path d="M120 62h276l-50 74 50 74H120" stroke-dasharray="6 4" stroke-width=".9" opacity=".75"/>
+      <!-- Grommets -->
+      <circle cx="132" cy="70" r="5"/>
+      <circle cx="132" cy="202" r="5"/>
+
+      <!-- Footing -->
+      <rect x="70" y="390" width="88" height="20" fill="url(#bp-hatch)"/>
+      <path d="M40 410h448" stroke-width="1"/>
+
+      <!-- Width dimension -->
+      <path d="M120 48V18M412 48V18" stroke-width=".8"/>
+      <path d="M122 26h288" stroke-width=".8" marker-start="url(#bp-arrow)" marker-end="url(#bp-arrow)"/>
+      <text x="266" y="20" text-anchor="middle" stroke="none">FLAG{&hellip;} &middot; 1 REQ'D</text>
+
+      <!-- Height dimension -->
+      <path d="M418 54h56M418 218h56" stroke-width=".8"/>
+      <path d="M466 56v160" stroke-width=".8" marker-start="url(#bp-arrow)" marker-end="url(#bp-arrow)"/>
+      <text x="474" y="140" stroke="none" transform="rotate(90 474 140)" text-anchor="middle">48 H</text>
+
+      <!-- Redline: revision cloud on the notch, delta and note -->
+      <path class="bp-red" stroke-width="1.6"
+            d="M344 108c4-10 18-10 22-2 6-8 20-4 20 6 10 0 14 14 6 20 8 6 4 20-6 20 0 10-14 14-20 6-4 8-18 8-22-2-10 2-16-12-8-18-8-8-2-22 8-22z"/>
+      <path class="bp-red-fill" stroke="none" d="M396 92l12 20h-24z"/>
+      <text x="396" y="109" text-anchor="middle" stroke="none" fill="#fff" style="font-size:10px">26</text>
+
+      <!-- Callout A -->
+      <circle cx="250" cy="300" r="16"/>
+      <text x="250" y="305" text-anchor="middle" stroke="none" style="font-size:14px">A</text>
+      <path d="M238 289l-52-60" stroke-width=".8" marker-end="url(#bp-arrow)"/>
+      <text x="276" y="296" stroke="none">SECTION A: CAPTURE</text>
+      <text x="276" y="312" stroke="none">SUBMIT BEFORE CLOSE</text>
+
+      <text x="40" y="426" stroke="none" opacity=".8">DETAIL 1 &mdash; FLAG, CAPTURE &middot; SCALE 1:1</text>
+    </svg>
+  </div>
+</section>
+
+<dl class="bp-specs">
+  <div data-bp-countdown>
+    <dt data-bp-countdown-label>Status</dt>
+    <dd class="bp-mono" data-bp-countdown-value>&mdash;</dd>
+  </div>
+  <div>
+    <dt>Format</dt>
+    <dd>Jeopardy</dd>
+  </div>
+  <div>
+    <dt>Team size</dt>
+    <dd>[up to 4]</dd>
+  </div>
+  <div>
+    <dt>Finals</dt>
+    <dd>[top student teams]</dd>
+  </div>
+</dl>
+
+<div class="bp-notes">
+  <p class="bp-label">General notes</p>
+  <ol>
+    <li>Flags look like <code>csawctf{...}</code> unless a challenge says otherwise.</li>
+    <li>Do not attack the scoring server or other teams' infrastructure.</li>
+    <li>Do not share flags or solutions until the competition closes.</li>
+    <li>Questions go to [contact channel]. Admins never ask for your password.</li>
+  </ol>
+</div>

@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% set code = "404" %}
+  {% set heading = _('Part not found on this drawing') %}
+  {% set detail = _('The page you asked for is not on any sheet. Check the reference and try again.') %}
+  {% include "components/error_sheet.html" %}
+{% endblock %}
