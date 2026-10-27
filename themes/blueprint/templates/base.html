@@ -68,6 +68,7 @@
   {{ Configs.theme_header }}
 </head>
 <body>
+<a class="bp-skip" href="#main">{% trans %}Skip to content{% endtrans %}</a>
 <div class="bp-frame" aria-hidden="true">
   <div class="bp-frame__zones bp-frame__zones--top">
     <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
@@ -79,7 +80,7 @@
 
 {% include "components/navbar.html" %}
 
-<main role="main">
+<main role="main" id="main" tabindex="-1">
   {% block content %}
   {% endblock %}
 </main>
@@ -91,7 +92,7 @@
     <dl class="bp-titleblock">
       <div class="bp-titleblock__title">
         <dt>{% trans %}The job{% endtrans %}</dt>
-        <dd>{{ Configs.ctf_name }}</dd>
+        <dd translate="no">{{ Configs.ctf_name }}</dd>
       </div>
       <div>
         <dt>{% trans %}Sheet{% endtrans %}</dt>

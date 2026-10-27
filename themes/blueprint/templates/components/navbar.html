@@ -20,7 +20,7 @@
           <path d="M3.5 11v10" stroke-width="2"/>
           <path class="bp-mark__flag" stroke="none" d="M16 3.2l-2 3h4z"/>
         </svg>
-        <span>{{ Configs.ctf_name }}</span>
+        <span translate="no">{{ Configs.ctf_name }}</span>
       {% endif %}
     </a>
 
@@ -87,7 +87,7 @@
 
           {% if is_admin() %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('admin.view') }}" title="{% trans %}Admin Panel{% endtrans %}">
+              <a class="nav-link" href="{{ url_for('admin.view') }}" title="{% trans %}Admin Panel{% endtrans %}" aria-label="{% trans %}Admin Panel{% endtrans %}">
                 <i class="fas fa-wrench" aria-hidden="true"></i>
                 <span class="d-md-none d-xl-inline">{% trans %}Admin{% endtrans %}</span>
               </a>
@@ -95,7 +95,8 @@
           {% endif %}
 
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('views.notifications') }}"{{ current('views.notifications') }} title="{% trans %}Notifications{% endtrans %}">
+            <a class="nav-link" href="{{ url_for('views.notifications') }}"{{ current('views.notifications') }} title="{% trans %}Notices{% endtrans %}"
+               x-data :aria-label="'{% trans %}Notices{% endtrans %}' + ($store.unread_count > 0 ? ', ' + $store.unread_count + ' {% trans %}unread{% endtrans %}' : '')">
               <i class="fas fa-bell" aria-hidden="true"></i>
               <span x-data x-show="$store.unread_count > 0" x-text="$store.unread_count" class="badge badge-notification"></span>
               <span class="d-md-none d-xl-inline">{% trans %}Notices{% endtrans %}</span>
@@ -104,7 +105,7 @@
 
           {% if Configs.user_mode == "teams" %}
             <li class="nav-item">
-              <a class="nav-link" href="{{ url_for('teams.private') }}"{{ current('teams.private') }} title="{% trans %}Team{% endtrans %}">
+              <a class="nav-link" href="{{ url_for('teams.private') }}"{{ current('teams.private') }} title="{% trans %}Team{% endtrans %}" aria-label="{% trans %}Team{% endtrans %}">
                 <i class="fas fa-users" aria-hidden="true"></i>
                 <span class="d-md-none d-xl-inline">{% trans %}Team{% endtrans %}</span>
               </a>
@@ -112,21 +113,21 @@
           {% endif %}
 
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('users.private') }}"{{ current('users.private') }} title="{% trans %}Profile{% endtrans %}">
+            <a class="nav-link" href="{{ url_for('users.private') }}"{{ current('users.private') }} title="{% trans %}Profile{% endtrans %}" aria-label="{% trans %}Profile{% endtrans %}">
               <i class="fas fa-user-circle" aria-hidden="true"></i>
               <span class="d-md-none d-xl-inline">{% trans %}Profile{% endtrans %}</span>
             </a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('views.settings') }}"{{ current('views.settings') }} title="{% trans %}Settings{% endtrans %}">
+            <a class="nav-link" href="{{ url_for('views.settings') }}"{{ current('views.settings') }} title="{% trans %}Settings{% endtrans %}" aria-label="{% trans %}Settings{% endtrans %}">
               <i class="fas fa-cogs" aria-hidden="true"></i>
               <span class="d-md-none">{% trans %}Settings{% endtrans %}</span>
             </a>
           </li>
 
           <li class="nav-item">
-            <a class="nav-link" href="{{ url_for('auth.logout') }}" title="{% trans %}Logout{% endtrans %}">
+            <a class="nav-link" href="{{ url_for('auth.logout') }}" title="{% trans %}Logout{% endtrans %}" aria-label="{% trans %}Logout{% endtrans %}">
               <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
               <span class="d-md-none">{% trans %}Logout{% endtrans %}</span>
             </a>
@@ -149,7 +150,7 @@
         {% endif %}
 
         <li class="nav-item dropdown">
-          <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{% trans %}Change language{% endtrans %}">
+          <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{% trans %}Change language{% endtrans %}" aria-label="{% trans %}Change language{% endtrans %}">
             <i class="fas fa-language" aria-hidden="true"></i>
             <span class="d-md-none">{% trans %}Language{% endtrans %}</span>
           </button>
@@ -158,9 +159,7 @@
               {% set curr_lang = get_locale() %}
               {%- for lang in Languages.names.items() %}
               <li>
-                  <span class="dropdown-item {{ 'bg-primary text-white' if (curr_lang == lang[0]) }}" @click="set" value="{{ lang[0] }}">
-                    {{ lang[1] }}
-                  </span>
+                  <button type="button" class="dropdown-item {{ 'bg-primary text-white' if (curr_lang == lang[0]) }}" @click="set" value="{{ lang[0] }}" lang="{{ lang[0] }}"{% if curr_lang == lang[0] %} aria-current="true"{% endif %}>{{ lang[1] }}</button>
               </li>
               {%- endfor %}
             </ul>

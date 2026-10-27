@@ -79,7 +79,7 @@
           <div class="min-vh-50 d-flex align-items-center">
             <div class="text-center w-100">
               <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner" aria-hidden="true"></i>
-              <span class="visually-hidden">{% trans %}Loading the plans{% endtrans %}</span>
+              <span class="visually-hidden">{% trans %}Loading the plans…{% endtrans %}</span>
             </div>
           </div>
         </div>
@@ -136,8 +136,7 @@
                 </template>
                 {% if authed() %}
                 <button type="button" :aria-pressed="hideSolved.toString()" @click="hideSolved = !hideSolved">
-                  <span x-show="!hideSolved">{% trans %}Hide cracked{% endtrans %}</span>
-                  <span x-show="hideSolved">{% trans %}Show cracked{% endtrans %}</span>
+                  {% trans %}Hide cracked{% endtrans %}
                 </button>
                 {% endif %}
               </nav>
@@ -149,14 +148,14 @@
               <label for="bp-search-input" class="visually-hidden">{% trans %}Find a target{% endtrans %}</label>
               <i class="fas fa-search" aria-hidden="true"></i>
               <input id="bp-search-input" x-ref="search" type="search" class="form-control" autocomplete="off"
-                     placeholder="{% trans %}Find a target by name, specialty or tag{% endtrans %}"
+                     placeholder="{% trans %}Find a target by name, specialty or tag…{% endtrans %}" spellcheck="false" enterkeyhint="search"
                      x-model="query" @keydown.escape="query = ''; $el.blur()">
               <kbd class="bp-search__key" x-show="!query" aria-hidden="true">/</kbd>
             </div>
           </template>
 
           <template x-if="challenges.length > 0 && query.trim() && !challenges.some(c => shown(c))">
-            <div class="bp-empty mt-4">
+            <div class="bp-empty mt-4" role="status">
               <p class="h3 mb-2">{% trans %}No targets match{% endtrans %} &ldquo;<span x-text="query.trim()"></span>&rdquo;</p>
               <p class="mb-0"><button type="button" class="btn btn-link p-0" @click="query = ''">{% trans %}Clear the search{% endtrans %}</button></p>
             </div>
@@ -191,7 +190,7 @@
                       @click="loadChallenge(c.id)"
                   >
                     <span class="bp-part__top">
-                      <span class="bp-part__no" x-text="partNo(ci, j)"></span>
+                      <span class="bp-part__no" translate="no" x-text="partNo(ci, j)"></span>
                       <span x-show="locked(c)">{% trans %}sealed{% endtrans %}</span>
                     </span>
                     <span class="bp-part__name" x-text="c.name"></span>

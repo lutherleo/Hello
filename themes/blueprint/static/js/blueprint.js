@@ -34,6 +34,9 @@
   document.documentElement.setAttribute("data-bs-theme", currentTheme);
 
   function syncSwitches() {
+    // Keep the browser chrome in step with the print.
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", currentTheme === "dark" ? "#0f3c74" : "#f3efe4");
     document.querySelectorAll(".theme-switch").forEach(function (button) {
       var next = currentTheme === "dark" ? "whiteprint" : "blueprint";
       button.setAttribute("aria-label", "Switch to " + next);
@@ -196,6 +199,7 @@
       button.className = "bp-copy";
       button.textContent = "Copy";
       button.setAttribute("aria-label", "Copy connection info");
+      button.setAttribute("aria-live", "polite");
       button.addEventListener("click", function () {
         copyText(text).then(
           function () {

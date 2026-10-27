@@ -26,7 +26,7 @@
 
       <div x-show="!loaded" class="bp-graph__loading">
         <i class="fas fa-circle-notch fa-spin fa-2x fa-fw spinner" aria-hidden="true"></i>
-        <span class="visually-hidden">{% trans %}Loading graph{% endtrans %}</span>
+        <span class="visually-hidden">{% trans %}Loading graph…{% endtrans %}</span>
       </div>
 
       <p class="bp-graph__none" x-show="loaded && !series.length" x-cloak>
@@ -70,7 +70,7 @@
       <div class="col-md-12" x-show="standings.length">
         <div class="bp-ledger-tools" x-show="standings.some(s => bpIsMe(s))" x-cloak>
           <a class="btn btn-secondary btn-sm" href="#bp-me"
-             @click.prevent="document.getElementById('bp-me').scrollIntoView({ block: 'center', behavior: 'smooth' })">{% trans %}Find my crew{% endtrans %}</a>
+             @click.prevent="document.getElementById('bp-me').scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })">{% trans %}Find my crew{% endtrans %}</a>
         </div>
         <div class="table-responsive">
           <table class="table table-striped align-middle">
@@ -98,7 +98,7 @@
                       <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
                     </template>
                     <span class="bp-you" x-show="bpIsMe(standing)">{% trans %}Your crew{% endtrans %}</span>
-                    <span class="bp-wallet" x-text="window.bpWallet ? window.bpWallet(standing.account_id + ':' + standing.name) : ''"></span>
+                    <span class="bp-wallet" translate="no" x-text="window.bpWallet ? window.bpWallet(standing.account_id + ':' + standing.name) : ''"></span>
                   </td>
                   <td class="text-end bp-score">{{ coin('symbol') }}<span x-text="Number(standing.score).toLocaleString()"></span></td>
                   {% if Configs.user_mode == 'teams' %}
