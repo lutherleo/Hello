@@ -17,6 +17,8 @@
   'auth.login': ('S-07', 'Check-in'),
   'auth.register': ('S-07', 'Recruiting'),
   'auth.reset_password': ('S-07', 'Reset'),
+  'auth.confirm': ('S-07', 'Confirm email'),
+  'views.setup': ('S-00', 'Setup'),
 } -%}
 {%- set bp_sheet = bp_sheets.get(request.endpoint, ('S-99', 'Detail')) -%}
 {%- from "macros/coin.html" import coin -%}
