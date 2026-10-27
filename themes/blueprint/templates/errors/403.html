@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% set code = "403" %}
+  {% set heading = error or _('Forbidden') %}
+  {% set detail = _('This sheet is restricted.') %}
+  {% include "components/error_sheet.html" %}
+{% endblock %}

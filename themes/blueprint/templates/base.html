@@ -1,0 +1,143 @@
+{%- set bp = Configs.theme_settings if Configs.theme_settings is mapping else {} -%}
+{%- set bp_sheets = {
+  'views.static_html': ('S-00', 'Cover'),
+  'challenges.listing': ('S-01', 'Challenges'),
+  'scoreboard.listing': ('S-02', 'Scoreboard'),
+  'users.listing': ('S-03', 'Users'),
+  'users.public': ('S-03', 'User'),
+  'users.private': ('S-03', 'Profile'),
+  'teams.listing': ('S-04', 'Teams'),
+  'teams.public': ('S-04', 'Team'),
+  'teams.private': ('S-04', 'Team'),
+  'views.notifications': ('S-05', 'Notices'),
+  'views.settings': ('S-06', 'Settings'),
+  'auth.login': ('S-07', 'Login'),
+  'auth.register': ('S-07', 'Register'),
+  'auth.reset_password': ('S-07', 'Reset'),
+} -%}
+{%- set bp_sheet = bp_sheets.get(request.endpoint, ('S-99', 'Detail')) -%}
+<!DOCTYPE html>
+<html lang="{{ get_locale() or 'en' }}" data-bs-theme="dark">
+<head>
+  <title>{{ title or Configs.ctf_name }}</title>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="theme-color" content="#0f3c74">
+  <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
+
+  {{ meta | safe }}
+
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+
+  {% block stylesheets %}
+    {{ Assets.css("assets/scss/main.scss") }}
+  {% endblock %}
+  <link rel="stylesheet" href="{{ url_for('views.themes', theme=(Configs.ctf_theme or 'blueprint'), path='css/blueprint.css') }}">
+
+  {{ Plugins.styles }}
+
+  {# Replaces core's color_mode_switcher: blueprint by default, whiteprint on request. #}
+  <script src="{{ url_for('views.themes', theme=(Configs.ctf_theme or 'blueprint'), path='js/blueprint.js') }}"></script>
+
+  <script type="text/javascript">
+      window.init = {
+          'urlRoot': "{{ request.script_root }}",
+          'csrfNonce': "{{ Session.nonce }}",
+          'userMode': "{{ Configs.user_mode }}",
+          'userId': {{ Session.id }},
+          'userName': {{ User.name | tojson }},
+          'userEmail': {{ User.email | tojson }},
+          'userVerified': {{ User.verified | tojson }},
+          'teamId': {{ Team.id | tojson }},
+          'teamName': {{ Team.name | tojson }},
+          'start': {{ Configs.start | tojson }},
+          'end': {{ Configs.end | tojson }},
+          'themeSettings': {{ Configs.theme_settings | tojson }},
+          'eventSounds': [
+            "/themes/core/static/sounds/notification.webm",
+            "/themes/core/static/sounds/notification.mp3",
+          ],
+      }
+  </script>
+
+  {{ Configs.theme_header }}
+</head>
+<body>
+<div class="bp-frame" aria-hidden="true">
+  <div class="bp-frame__zones bp-frame__zones--top">
+    <span>1</span><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><span>8</span>
+  </div>
+  <div class="bp-frame__zones bp-frame__zones--left">
+    <span>A</span><span>B</span><span>C</span><span>D</span><span>E</span><span>F</span>
+  </div>
+</div>
+
+{% include "components/navbar.html" %}
+
+<main role="main">
+  {% block content %}
+  {% endblock %}
+</main>
+
+{% include "components/snackbar.html" %}
+
+<footer class="footer">
+  <div class="container">
+    <dl class="bp-titleblock">
+      <div class="bp-titleblock__title">
+        <dt>{% trans %}Project{% endtrans %}</dt>
+        <dd>{{ Configs.ctf_name }}</dd>
+      </div>
+      <div>
+        <dt>{% trans %}Sheet{% endtrans %}</dt>
+        <dd>{{ bp_sheet[0] }} &middot; {{ bp_sheet[1] }}</dd>
+      </div>
+      <div>
+        <dt>{% trans %}Drawn by{% endtrans %}</dt>
+        <dd>{{ bp.get('organizer', 'OSIRIS Lab') }}</dd>
+      </div>
+      <div>
+        <dt>{% trans %}Rev{% endtrans %}</dt>
+        <dd>{{ bp.get('revision', '26') }}</dd>
+      </div>
+      <div>
+        <dt>{% trans %}Engine{% endtrans %}</dt>
+        <dd><a href="https://ctfd.io">{% trans %}Powered by CTFd{% endtrans %}</a></dd>
+      </div>
+      <div>
+        <dt>{% trans %}Scale{% endtrans %}</dt>
+        <dd>1 : 1</dd>
+      </div>
+      <div>
+        <dt>{% trans %}Units{% endtrans %}</dt>
+        <dd>{% trans %}points{% endtrans %}</dd>
+      </div>
+      <div>
+        <dt>{% trans %}Print{% endtrans %}</dt>
+        <dd>
+          <button class="theme-switch btn btn-link p-0 border-0 align-baseline" type="button">
+            <span data-print-label>Blueprint</span>
+          </button>
+        </dd>
+      </div>
+      <div>
+        <dt>{% trans %}Contact{% endtrans %}</dt>
+        <dd>{{ bp.get('contact', '—') }}</dd>
+      </div>
+    </dl>
+  </div>
+</footer>
+
+{% include "components/notifications.html" %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/page.js") }}
+{% endblock %}
+
+{{ Plugins.scripts }}
+
+{{ Configs.theme_footer }}
+</body>
+</html>

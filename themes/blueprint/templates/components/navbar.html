@@ -1,0 +1,170 @@
+{%- macro current(endpoint) -%}
+  {%- if request.endpoint == endpoint %} aria-current="page"{% endif -%}
+{%- endmacro -%}
+<nav class="navbar navbar-expand-md fixed-top" aria-label="{% trans %}Main{% endtrans %}">
+  <div class="container">
+    <a href="{{ url_for('views.static_html', route='/') }}" class="navbar-brand">
+      {% if Configs.ctf_logo %}
+        <img
+            class="img-responsive ctf_logo"
+            src="{{ url_for('views.files', path=Configs.ctf_logo) }}"
+            alt="{{ Configs.ctf_name }}"
+            height="32"
+        >
+      {% else %}
+        <svg class="bp-mark" viewBox="0 0 32 32" aria-hidden="true" fill="none" stroke="currentColor" stroke-width="1.25">
+          <rect x="0.75" y="0.75" width="30.5" height="30.5"/>
+          <path d="M9 26V6"/>
+          <path class="bp-mark__flag" stroke="none" d="M9.6 6.6h13l-3.2 4.4 3.2 4.4h-13z"/>
+          <path d="M6 26h20" stroke-dasharray="1.5 1.5"/>
+          <path d="M26 6v3M26 12.5v3" />
+          <path d="M24.5 6h3M24.5 15.4h3" />
+        </svg>
+        <span>{{ Configs.ctf_name }}</span>
+      {% endif %}
+    </a>
+
+    <button
+        class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#base-navbars"
+        aria-controls="base-navbars" aria-expanded="false" aria-label="{% trans %}Toggle navigation{% endtrans %}"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+    <div class="collapse navbar-collapse" id="base-navbars">
+      <ul class="navbar-nav me-auto">
+        {% for page in Plugins.user_menu_pages %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ page.route }}" {% if page.link_target %}target="{{ page.link_target }}"{% endif %}>
+              {{ page.title }}
+            </a>
+          </li>
+        {% endfor %}
+
+        <li class="nav-item">
+          <a class="nav-link" href="{{ url_for('challenges.listing') }}"{{ current('challenges.listing') }}>
+            {% trans %}Challenges{% endtrans %}
+          </a>
+        </li>
+
+        {% if Configs.account_visibility != 'admins' and Configs.score_visibility != 'admins' %}
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('scoreboard.listing') }}"{{ current('scoreboard.listing') }}>
+              {% trans %}Scoreboard{% endtrans %}
+            </a>
+          </li>
+        {% endif %}
+
+        {% if Configs.account_visibility != 'admins' %}
+          {% if Configs.user_mode == 'teams' %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('teams.listing') }}"{{ current('teams.listing') }}>
+                {% trans %}Teams{% endtrans %}
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('users.listing') }}"{{ current('users.listing') }}>
+              {% trans %}Users{% endtrans %}
+            </a>
+          </li>
+        {% endif %}
+      </ul>
+
+      <hr class="d-md-none">
+
+      <ul class="navbar-nav ms-md-auto">
+        {% if authed() %}
+
+          {% if is_admin() %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('admin.view') }}" title="{% trans %}Admin Panel{% endtrans %}">
+                <i class="fas fa-wrench" aria-hidden="true"></i>
+                <span class="d-md-none d-xl-inline">{% trans %}Admin{% endtrans %}</span>
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('views.notifications') }}"{{ current('views.notifications') }} title="{% trans %}Notifications{% endtrans %}">
+              <i class="fas fa-bell" aria-hidden="true"></i>
+              <span x-data x-show="$store.unread_count > 0" x-text="$store.unread_count" class="badge badge-notification"></span>
+              <span class="d-md-none d-xl-inline">{% trans %}Notices{% endtrans %}</span>
+            </a>
+          </li>
+
+          {% if Configs.user_mode == "teams" %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('teams.private') }}"{{ current('teams.private') }} title="{% trans %}Team{% endtrans %}">
+                <i class="fas fa-users" aria-hidden="true"></i>
+                <span class="d-md-none d-xl-inline">{% trans %}Team{% endtrans %}</span>
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('users.private') }}"{{ current('users.private') }} title="{% trans %}Profile{% endtrans %}">
+              <i class="fas fa-user-circle" aria-hidden="true"></i>
+              <span class="d-md-none d-xl-inline">{% trans %}Profile{% endtrans %}</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('views.settings') }}"{{ current('views.settings') }} title="{% trans %}Settings{% endtrans %}">
+              <i class="fas fa-cogs" aria-hidden="true"></i>
+              <span class="d-md-none">{% trans %}Settings{% endtrans %}</span>
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.logout') }}" title="{% trans %}Logout{% endtrans %}">
+              <i class="fas fa-sign-out-alt" aria-hidden="true"></i>
+              <span class="d-md-none">{% trans %}Logout{% endtrans %}</span>
+            </a>
+          </li>
+        {% else %}
+
+          {% if registration_visible() %}
+            <li class="nav-item">
+              <a class="nav-link" href="{{ url_for('auth.register') }}"{{ current('auth.register') }}>
+                {% trans %}Register{% endtrans %}
+              </a>
+            </li>
+          {% endif %}
+
+          <li class="nav-item">
+            <a class="nav-link" href="{{ url_for('auth.login') }}"{{ current('auth.login') }}>
+              {% trans %}Login{% endtrans %}
+            </a>
+          </li>
+        {% endif %}
+
+        <li class="nav-item dropdown">
+          <button class="nav-link dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="{% trans %}Change language{% endtrans %}">
+            <i class="fas fa-language" aria-hidden="true"></i>
+            <span class="d-md-none">{% trans %}Language{% endtrans %}</span>
+          </button>
+          <form x-data="LanguageForm">
+            <ul class="dropdown-menu dropdown-menu-end">
+              {% set curr_lang = get_locale() %}
+              {%- for lang in Languages.names.items() %}
+              <li>
+                  <span class="dropdown-item {{ 'bg-primary text-white' if (curr_lang == lang[0]) }}" @click="set" value="{{ lang[0] }}">
+                    {{ lang[1] }}
+                  </span>
+              </li>
+              {%- endfor %}
+            </ul>
+          </form>
+        </li>
+
+        <li class="nav-item">
+          <button class="nav-link theme-switch" type="button">
+            <span class="bp-print-chip"><span data-print-label>Blueprint</span></span>
+          </button>
+        </li>
+      </ul>
+    </div>
+  </div>
+</nav>
