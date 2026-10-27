@@ -75,6 +75,14 @@
       <hr class="d-md-none">
 
       <ul class="navbar-nav ms-md-auto">
+        {% if Configs.start or Configs.end %}
+          <li class="nav-item d-none d-xl-flex">
+            <span class="nav-link bp-clock" data-bp-countdown data-bp-compact hidden>
+              <span data-bp-countdown-label></span>
+              <span class="bp-clock__value" data-bp-countdown-value></span>
+            </span>
+          </li>
+        {% endif %}
         {% if authed() %}
 
           {% if is_admin() %}

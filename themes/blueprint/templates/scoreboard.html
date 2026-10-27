@@ -68,6 +68,10 @@
       </template>
 
       <div class="col-md-12" x-show="standings.length">
+        <div class="bp-ledger-tools" x-show="standings.some(s => bpIsMe(s))" x-cloak>
+          <a class="btn btn-secondary btn-sm" href="#bp-me"
+             @click.prevent="document.getElementById('bp-me').scrollIntoView({ block: 'center', behavior: 'smooth' })">{% trans %}Find my crew{% endtrans %}</a>
+        </div>
         <div class="table-responsive">
           <table class="table table-striped align-middle">
             <thead>
@@ -83,7 +87,8 @@
 
             <tbody>
               <template x-for="(standing, index) in standings.filter(i => activeBracket ? i.bracket_id==activeBracket : true)">
-                <tr @mouseenter="index < 10 && $dispatch('bp-highlight', index + 1)" @mouseleave="$dispatch('bp-highlight', null)">
+                <tr @mouseenter="index < 10 && $dispatch('bp-highlight', index + 1)" @mouseleave="$dispatch('bp-highlight', null)"
+                    :class="{'bp-row--me': bpIsMe(standing)}" :id="bpIsMe(standing) ? 'bp-me' : null">
                   <th scope="row" class="text-center">
                     <span class="bp-rank" :class="{'bp-rank--podium': index < 3}" x-text="String(index + 1).padStart(2, '0')"></span>
                   </th>
@@ -92,6 +97,7 @@
                     <template x-if="standing.bracket_name">
                       <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
                     </template>
+                    <span class="bp-you" x-show="bpIsMe(standing)">{% trans %}Your crew{% endtrans %}</span>
                     <span class="bp-wallet" x-text="window.bpWallet ? window.bpWallet(standing.account_id + ':' + standing.name) : ''"></span>
                   </td>
                   <td class="text-end bp-score">{{ coin('symbol') }}<span x-text="Number(standing.score).toLocaleString()"></span></td>

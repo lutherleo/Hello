@@ -96,10 +96,17 @@
         label = "Status";
         value = "In progress";
       }
+      var shortLabel = { "Job starts in": "Starts in", "Get out in": "Ends in" }[label] || "";
       nodes.forEach(function (node) {
+        var compact = node.hasAttribute("data-bp-compact");
         var l = node.querySelector("[data-bp-countdown-label]");
         var v = node.querySelector("[data-bp-countdown-value]");
-        if (l) l.textContent = label;
+        if (compact && label === "Status") {
+          node.hidden = true;
+          return;
+        }
+        node.hidden = false;
+        if (l) l.textContent = compact ? shortLabel : label;
         if (v) v.textContent = value;
       });
     }
@@ -145,6 +152,66 @@
     var hex = (h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0"));
     return "hb_" + hex.slice(0, 6) + "…" + hex.slice(-4);
   };
+
+  // Is this scoreboard entry the viewer's own account (their crew in teams mode)?
+  window.bpIsMe = function (standing) {
+    if (!window.init || !standing) return false;
+    var mine = window.init.userMode === "teams" ? window.init.teamId : window.init.userId;
+    return mine !== null && mine !== undefined && Number(standing.account_id) === Number(mine);
+  };
+
+  // Copy to clipboard, with a fallback for non-secure origins.
+  function copyText(text) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      document.body.appendChild(area);
+      area.select();
+      var ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch (e) {
+        ok = false;
+      }
+      document.body.removeChild(area);
+      ok ? resolve() : reject();
+    });
+  }
+
+  // Challenge window: a copy button beside the connection info.
+  document.addEventListener("shown.bs.modal", function (event) {
+    var modal = event.target;
+    modal.querySelectorAll(".challenge-connection-info").forEach(function (info) {
+      if (info.querySelector(".bp-copy")) return;
+      var text = info.textContent.trim();
+      if (!text) return;
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "bp-copy";
+      button.textContent = "Copy";
+      button.setAttribute("aria-label", "Copy connection info");
+      button.addEventListener("click", function () {
+        copyText(text).then(
+          function () {
+            button.textContent = "Copied";
+            setTimeout(function () {
+              button.textContent = "Copy";
+            }, 1600);
+          },
+          function () {
+            button.textContent = "Select and copy";
+          }
+        );
+      });
+      info.appendChild(button);
+    });
+  });
 
   window.bpCrewRole = function (category) {
     var key = String(category || "").trim().toLowerCase();
