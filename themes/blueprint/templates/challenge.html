@@ -1,3 +1,4 @@
+{% from "macros/coin.html" import coin %}
 <div :class="getStyles()" role="document" x-data="Challenge" x-init='id = {{ challenge.id }}; max_attempts = {{ max_attempts }}; attempts = {{ attempts }}; ratingValue = {{ (rating.get('value') if rating else None) | tojson }}; ratingReview = {{ (rating.get('review', '') if rating else None) | tojson }};'>
   <div class="modal-content">
     <div class="modal-body py-4 px-4 px-sm-5">
@@ -116,9 +117,9 @@
                     {% else %}
                     <details @toggle="showHint(event)">
                       {% if hint.title %}
-                      <summary>{{ hint.title }} (Cost: {{ hint.cost }} point{{ hint.cost|pluralize }})</summary>
+                      <summary>{{ hint.title }} ({% trans %}Cost{% endtrans %}: {{ coin('symbol') }}{{ hint.cost }})</summary>
                       {% else %}
-                      <summary>Unlock Hint for {{ hint.cost }} point{{ hint.cost|pluralize }}</summary>
+                      <summary>{% trans %}Unlock hint for{% endtrans %} {{ coin('symbol') }}{{ hint.cost }}</summary>
                       {% endif %}
                       <div x-html="html"></div>
                     </details>

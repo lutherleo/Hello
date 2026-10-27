@@ -358,12 +358,23 @@ class Handler(SimpleHTTPRequestHandler):
         html = env.get_template(template).render(request=req, **ctx)
         self.send_bytes(html.encode(), "text/html; charset=utf-8", code)
 
+    def do_HEAD(self):
+        # ctfd-js polls notification counts with HEAD.
+        self.send_response(200)
+        self.send_header("Result-Count", "0")
+        self.end_headers()
+
     def do_POST(self):
         path = urlparse(self.path).path
         if path == "/api/v1/challenges/attempt":
             length = int(self.headers.get("Content-Length", 0))
             data = json.loads(self.rfile.read(length) or b"{}")
             ok = data.get("submission", "").startswith("csawctf{")
+            if ok:
+                for c in CHALLENGES:
+                    if c["id"] == data.get("challenge_id"):
+                        c["solved_by_me"] = True
+                        c["solves"] = (c["solves"] or 0) + 1
             return self.send_json({"success": True, "data": {
                 "status": "correct" if ok else "incorrect",
                 "message": "Correct" if ok else "Incorrect"}})
@@ -390,9 +401,14 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"success": True, "data": [
                 {"account_id": 1, "name": t, "date": "2026-10-27T10:00:00+00:00", "account_url": "/teams/1"}
                 for t in TEAMS[:5]]})
+        if path.startswith("/api/v1/challenges/") and path.endswith("/solution"):
+            # Same shape as CTFd for a challenge without a solution.
+            return self.send_json({"success": True, "data": {"id": None, "state": "hidden"}})
         if path.startswith("/api/v1/challenges/"):
-            c = next(c for c in CHALLENGES if str(c["id"]) == path.rsplit("/", 1)[1])
-            d = dict(c, description="", connection_info="", attribution="", next_id=None, solution_id=None,
+            c = next((c for c in CHALLENGES if str(c["id"]) == path.rsplit("/", 1)[1]), None)
+            if c is None:
+                return self.send_json({"success": False}, 404)
+            d = dict(c, description="", connection_info="", attribution="", next_id=None, solution_id=None, solution_state="hidden",
                      view=challenge_view(c),
                      type_data={"id": "standard", "name": "standard",
                                 "scripts": {"view": "/plugins/challenges/assets/view.js"}})
