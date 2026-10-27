@@ -123,8 +123,25 @@ class Field:
         elif "password" in name or name == "confirm":
             self.type = "password"
 
-    def label(self, **kw):
-        return Markup(f'<label for="{self.name}" class="{kw.get("class", "")}">{self._label}</label>')
+    def __iter__(self):
+        # Radio groups iterate their options.
+        if self.name == "user_mode":
+            return iter([Field("user_mode_teams", "Team Mode", "radio"), Field("user_mode_users", "User Mode", "radio")])
+        return iter([])
+
+    @property
+    def label(self):
+        # WTForms labels render both as {{ field.label }} and {{ field.label(class=...) }}.
+        field = self
+
+        class Label(str):
+            def __call__(self, **kw):
+                return Markup(f'<label for="{field.name}" class="{kw.get("class", "")}">{field._label}</label>')
+
+            def __html__(self):
+                return self(**{})
+
+        return Label(self._label)
 
     def __call__(self, **kw):
         cls = kw.get("class", "")
@@ -165,6 +182,7 @@ class AnyForms:
 
 
 FORMS = Obj(
+    setup=AnyForms(),
     teams=AnyForms(),
     users=AnyForms(),
     auth=Obj(
@@ -206,6 +224,7 @@ env.globals.update(
     get_mode_as_word=lambda plural=False, capitalize=False: ("User" if SOLO else "Team") if capitalize else ("user" if SOLO else "team"),
     meta="",
     can_send_mail=lambda: False,
+    Git=Obj(providers=[]),
     scores_visible=lambda: True,
     accounts_visible=lambda: True,
     lookup_country_code=lambda c: {"US": "United States", "DE": "Germany", "IN": "India", "BR": "Brazil"}.get(c, c),
@@ -478,6 +497,8 @@ class Handler(SimpleHTTPRequestHandler):
                                website="", affiliation="NYU Tandon", country="US", language="en", tokens=[
                                    Obj(id=1, created="2026-10-20T10:00:00+00:00", expiration="2026-11-20T10:00:00+00:00",
                                        description="scripts")], errors=[])
+        if path == "/setup":
+            return self.render("setup.html", "views.setup", errors=[], infos=[], state="x")
         if path == "/team/enroll":  # what /team shows a player with no crew yet
             return self.render("teams/team_enrollment.html", "teams.private", errors=[], infos=[])
         if path == "/teams/join":
