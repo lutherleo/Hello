@@ -2471,8 +2471,46 @@ html[data-bs-theme="light"] .bp-crew__grid li {
 
 .bp-ledger-tools {
   display: flex;
-  justify-content: flex-end;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
   margin-bottom: 0.75rem;
+}
+
+.bp-search--inline {
+  margin: 0;
+  flex: 1 1 16rem;
+  max-width: 24rem;
+}
+
+#bp-crew-search {
+  padding-left: 2.5rem !important;
+}
+
+.bp-col-place {
+  width: 5.5rem;
+}
+
+.bp-you {
+  white-space: nowrap;
+}
+
+/* Phones: the ledger keeps place, crew and balance; the cut and the wallet
+   IDs are on the wider layouts. */
+@media (max-width: 575.98px) {
+  .bp-col-place {
+    width: 3.5rem;
+  }
+
+  .bp-col-cut,
+  .bp-wallet {
+    display: none !important;
+  }
+
+  .table > :not(caption) > * > * {
+    padding: 0.6rem 0.5rem;
+  }
 }
 
 .table tr.bp-row--me > * {

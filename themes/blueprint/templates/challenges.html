@@ -34,8 +34,9 @@
       slug(category) { return 'section-' + String(category).toLowerCase().replace(/[^a-z0-9]+/g, '-'); },
       locked(c) { return c.type === 'hidden'; },
       role(category) { return window.bpCrewRole ? window.bpCrewRole(category) : ''; },
-      scored() { return this.challenges.filter(c => c.solved_by_me).reduce((sum, c) => sum + (c.value || 0), 0); },
-      total() { return this.challenges.reduce((sum, c) => sum + (c.value || 0), 0); },
+      list() { return Array.isArray(this.challenges) ? this.challenges : []; },
+      scored() { return this.list().filter(c => c.solved_by_me).reduce((sum, c) => sum + (c.value || 0), 0); },
+      total() { return this.list().reduce((sum, c) => sum + (c.value || 0), 0); },
       solvedCount(list) { return list.filter(c => c.solved_by_me).length; },
       visible(list) { return list.filter(c => this.shown(c)); },
       percent() { const t = this.total(); return t ? Math.min(100, (this.scored() / t) * 100) : 0; },
@@ -62,7 +63,7 @@
           <div class="bp-sheet-meta bp-label">
             <span>{% trans %}Sheet{% endtrans %} S-01</span>
             <span>{% trans %}Exchange floor plan{% endtrans %}</span>
-            <span x-show="loaded" x-cloak><span x-text="getCategories().length"></span> {% trans %}specialties{% endtrans %} &middot; <span x-text="challenges.length"></span> {% trans %}targets{% endtrans %}</span>
+            <span x-show="loaded && list().length" x-cloak><span x-text="list().length ? getCategories().length : 0"></span> {% trans %}specialties{% endtrans %} &middot; <span x-text="list().length"></span> {% trans %}targets{% endtrans %}</span>
           </div>
           <h1>{% trans %}The Job{% endtrans %}</h1>
         </div>
@@ -85,22 +86,22 @@
         </div>
 
         <div x-show="loaded" x-cloak>
-          <template x-if="challenges.length === 0">
+          <template x-if="list().length === 0">
             <div class="bp-empty">
               <p class="h3 mb-2">{% trans %}The board is empty.{% endtrans %}</p>
               <p class="mb-0">{% trans %}Targets go up when the doors open. Get your crew ready.{% endtrans %}</p>
             </div>
           </template>
 
-          <template x-if="challenges.length > 0">
+          <template x-if="list().length > 0">
             <div class="bp-board-head">
               {% if authed() %}
               <div class="bp-gauge" role="group" aria-label="{% trans %}Your crew's haul{% endtrans %}">
-                <p class="bp-label mb-1">{% trans %}Your crew's haul{% endtrans %}</p>
+                <p class="bp-label mb-1">{% if Configs.user_mode == 'teams' %}{% trans %}Your crew's haul{% endtrans %}{% else %}{% trans %}Your haul{% endtrans %}{% endif %}</p>
                 <div class="bp-gauge__figures">
                   <span class="bp-gauge__value"><span class="bp-coin">{{ coin('symbol') }}</span><span x-text="scored().toLocaleString()"></span></span>
                   <span class="bp-gauge__of">/ {{ coin('symbol') }}<span x-text="total().toLocaleString()"></span> {% trans %}in cold storage{% endtrans %}
-                    &middot; <span x-text="solvedCount(challenges)"></span>/<span x-text="challenges.length"></span> {% trans %}cracked{% endtrans %}</span>
+                    &middot; <span x-text="solvedCount(list())"></span>/<span x-text="list().length"></span> {% trans %}cracked{% endtrans %}</span>
                 </div>
                 <div class="bp-gauge__track">
                   <div class="bp-gauge__fill" :style="`width: ${percent()}%`" :data-empty="scored() === 0"></div>
@@ -127,7 +128,7 @@
               {% endif %}
 
               <nav class="bp-index" aria-label="{% trans %}Specialties{% endtrans %}">
-                <template x-for="(category, ci) in getCategories()" :key="category">
+                <template x-for="(category, ci) in (list().length ? getCategories() : [])" :key="category">
                   <a :href="'#' + slug(category)">
                     <span class="bp-index__key" x-text="sectionKey(ci)"></span>
                     <span x-text="category"></span>
@@ -143,7 +144,7 @@
             </div>
           </template>
 
-          <template x-if="challenges.length > 0">
+          <template x-if="list().length > 0">
             <div class="bp-search" role="search">
               <label for="bp-search-input" class="visually-hidden">{% trans %}Find a target{% endtrans %}</label>
               <i class="fas fa-search" aria-hidden="true"></i>
@@ -154,14 +155,14 @@
             </div>
           </template>
 
-          <template x-if="challenges.length > 0 && query.trim() && !challenges.some(c => shown(c))">
+          <template x-if="list().length > 0 && query.trim() && !list().some(c => shown(c))">
             <div class="bp-empty mt-4" role="status">
               <p class="h3 mb-2">{% trans %}No targets match{% endtrans %} &ldquo;<span x-text="query.trim()"></span>&rdquo;</p>
               <p class="mb-0"><button type="button" class="btn btn-link p-0" @click="query = ''">{% trans %}Clear the search{% endtrans %}</button></p>
             </div>
           </template>
 
-          <template x-for="(category, ci) in getCategories()" :key="category">
+          <template x-for="(category, ci) in (list().length ? getCategories() : [])" :key="category">
             <section class="bp-section" :id="slug(category)" x-show="visible(getChallenges(category)).length > 0">
               <header class="bp-section__head">
                 <span class="bp-section__key" x-text="sectionKey(ci)" aria-hidden="true"></span>

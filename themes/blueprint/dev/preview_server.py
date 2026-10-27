@@ -4,7 +4,8 @@ Renders the theme's real Jinja templates with mocked CTFd globals and serves a
 mocked /api/v1 so the compiled core JS (Alpine, ctfd-js, ECharts) runs. Stdlib
 plus Jinja2 only.
 
-    python3 dev/preview_server.py . <path to a CTFd checkout> [port] [--anon|--empty]
+    python3 dev/preview_server.py . <path to a CTFd checkout> [port]
+        [--anon] [--empty] [--ended] [--api-error] [--users] [--stress]
 """
 import json
 import re
@@ -23,6 +24,10 @@ CTFD = os.path.abspath(sys.argv[2])
 PORT = int(sys.argv[3]) if len(sys.argv) > 3 and sys.argv[3].isdigit() else 8765
 ANON = "--anon" in sys.argv
 EMPTY = "--empty" in sys.argv
+ENDED = "--ended" in sys.argv        # the CTF finished an hour ago
+API_ERROR = "--api-error" in sys.argv  # /api/v1/challenges answers 403
+SOLO = "--users" in sys.argv         # user mode: no teams
+STRESS = "--stress" in sys.argv      # long names, many categories and teams
 NOW = int(time.time())
 
 
@@ -52,6 +57,11 @@ CONFIGS = Obj(
     social_shares=False,
     tos_or_privacy=False,
 )
+
+if ENDED:
+    CONFIGS.start, CONFIGS.end = NOW - 3 * 86400, NOW - 3600
+if SOLO:
+    CONFIGS.user_mode = "users"
 
 MANIFEST = json.load(open(os.path.join(THEME, "static", "manifest.json")))
 
@@ -181,7 +191,7 @@ env.globals.update(
     Plugins=Obj(styles="", scripts="", user_menu_pages=[]),
     Session=Obj(nonce="nonce", id=0 if ANON else 7),
     User=Obj(name=None if ANON else "kernel_panic", email="kp@example.org", verified=True),
-    Team=Obj(id=None if ANON else 3, name=None if ANON else "Segfault Society"),
+    Team=Obj(id=None if (ANON or SOLO) else 3, name=None if (ANON or SOLO) else "Segfault Society"),
     authed=lambda: not ANON,
     is_admin=lambda: False,
     registration_visible=lambda: True,
@@ -190,7 +200,7 @@ env.globals.update(
     url_for=url_for,
     Forms=FORMS,
     integrations=Obj(mlc=lambda: False),
-    get_mode_as_word=lambda plural=False, capitalize=False: "Team" if capitalize else "team",
+    get_mode_as_word=lambda plural=False, capitalize=False: ("User" if SOLO else "Team") if capitalize else ("user" if SOLO else "team"),
     meta="",
     can_send_mail=lambda: False,
     scores_visible=lambda: True,
@@ -206,6 +216,17 @@ CATS = {
     "crypto": [("Lattice Hatching", 200, 77), ("Diffie-Hellman Dimensions", 300, 31), ("Isometric Keys", 500, 0)],
     "forensics": [("Cyanotype", 100, 455), ("Deleted Layers", 300, 52)],
 }
+if STRESS:
+    CATS = {
+        "pwn": [("A Remarkably Long Challenge Name That Wraps Across Several Lines Of The Card", 500, 3)],
+        "Reverse Engineering And Binary Analysis": [("x", 50, 999), ("unbrokenstringwithoutanyspacesatallforwrapping", 300, 12)],
+        "web": [("Web %d" % i, 100 + i * 25, 40 - i) for i in range(14)],
+        "crypto": [("Crypto %d" % i, 200, 5) for i in range(3)],
+        "forensics": [("Forensics", 100, 1)], "misc": [("Misc", 50, 300)], "osint": [("OSINT", 100, 80)],
+        "hardware": [("Hardware", 400, 2)], "intro": [("Intro", 10, 1200)], "blockchain": [("Chain", 300, 9)],
+        "incident response": [("IR", 200, 20)], "mobile": [("APK", 250, 33)],
+    }
+
 CHALLENGES = []
 SOLVED = {1, 2, 5, 8, 9, 15}
 cid = 0
@@ -225,6 +246,10 @@ if EMPTY:
 TEAMS = ["Segfault Society", "Null Pointer Club", "0xDEADBEEF", "Shell Shocked", "Rubber Duckies",
          "Off By One", "Heap Heroes", "Kernel Sanders", "Bit Flippers", "Tandon Tinkerers", "Packet Rats",
          "Root Cause"]
+if STRESS:
+    TEAMS = ["Team %03d" % i for i in range(120)]
+    TEAMS[4] = "AnExtremelyLongTeamNameWithNoSpacesThatShouldWrapInsteadOfOverflowingTheLedger"
+    TEAMS[7] = "A team name with plenty of words that goes on and on well past the width of a phone"
 
 
 class Page:
@@ -357,6 +382,8 @@ class Handler(SimpleHTTPRequestHandler):
         if path.startswith("/plugins/challenges/assets/"):
             fp = os.path.join(CTFD, "CTFd", path.lstrip("/"))
             return self.send_bytes(open(fp, "rb").read(), "application/javascript")
+        if path == "/api/v1/challenges" and API_ERROR:
+            return self.send_json({"success": False, "errors": {"": ["CSAW CTF '26 has not started yet"]}}, 403)
         if path == "/api/v1/challenges":
             return self.send_json({"success": True, "data": CHALLENGES})
         if path.startswith("/api/v1/challenges/") and path.endswith("/solves"):
@@ -398,7 +425,9 @@ class Handler(SimpleHTTPRequestHandler):
             content = Markup(open(os.path.join(THEME, "pages", "index.html")).read())
             return self.render("page.html", "views.static_html", content=content)
         if path == "/challenges":
-            return self.render("challenges.html", "challenges.listing", errors=[], infos=[])
+            infos = ["CSAW CTF '26 has ended"] if ENDED else []
+            errors = ["CSAW CTF '26 has not started yet"] if API_ERROR else []
+            return self.render("challenges.html", "challenges.listing", errors=errors, infos=infos)
         if path == "/scoreboard":
             return self.render("scoreboard.html", "scoreboard.listing", errors=[], infos=[])
         if path == "/login":
