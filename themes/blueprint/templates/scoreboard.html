@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% from "macros/coin.html" import coin %}
+{% set teams_mode = Configs.user_mode == 'teams' %}
+
+{% block content %}
+  <div class="jumbotron">
+    <div class="container">
+      <div class="bp-sheet-meta bp-label">
+        <span>{% trans %}Sheet{% endtrans %} S-02</span>
+        <span>{% trans %}Public ledger{% endtrans %} &middot; {% if teams_mode %}{% trans %}crew balances in{% endtrans %}{% else %}{% trans %}balances in{% endtrans %}{% endif %} {{ coin('name') }}</span>
+      </div>
+      <h1>
+        {% trans %}The Ledger{% endtrans %}
+      </h1>
+    </div>
+  </div>
+  <div class="container">
+    {% include "components/errors.html" %}
+
+    <section id="score-graph" class="bp-graph" x-data="BlueprintGraph" x-show="!sealed && !(loaded && !series.length)"
+             @bracket-change.window="bracket = $event.detail; update()"
+             @bp-highlight.window="active = $event.detail">
+      <header class="bp-graph__head">
+        <h2 class="h3 m-0">{% if teams_mode %}{% trans %}Top 10 crews{% endtrans %}{% else %}{% trans %}Top 10{% endtrans %}{% endif %}</h2>
+        <span class="bp-label">{% trans %}Balance against time{% endtrans %}</span>
+      </header>
+
+      <div x-show="!loaded" class="bp-graph__loading">
+        <i class="fas fa-circle-notch fa-spin fa-2x fa-fw spinner" aria-hidden="true"></i>
+        <span class="visually-hidden">{% trans %}Loading graph…{% endtrans %}</span>
+      </div>
+
+      <div class="bp-graph__plot" x-ref="plot" x-show="loaded && series.length" x-cloak
+           role="img" :aria-label="summary()" x-html="svg()"></div>
+
+      <ol class="bp-graph__legend" x-show="series.length" x-cloak aria-label="{% trans %}Graph legend{% endtrans %}">
+        <template x-for="s in series" :key="s.rank">
+          <li>
+            <button type="button"
+                    :style="`--series: var(--bp-series-${s.rank})`"
+                    :aria-pressed="(pinned === s.rank).toString()"
+                    @mouseenter="active = s.rank" @mouseleave="active = null"
+                    @focus="active = s.rank" @blur="active = null"
+                    @click="pinned = pinned === s.rank ? null : s.rank">
+              <span class="bp-graph__swatch" aria-hidden="true"></span>
+              <span class="bp-graph__rank" x-text="String(s.rank).padStart(2, '0')"></span>
+              <span class="bp-graph__name" x-text="s.name"></span>
+              <span class="bp-graph__score">{{ coin('symbol') }}<span x-text="Number(s.score).toLocaleString()"></span></span>
+            </button>
+          </li>
+        </template>
+      </ol>
+    </section>
+
+    <div id="scoreboard" class="row" x-data="ScoreboardList">
+      <template x-if="(brackets || []).length && (standings || []).length">
+        <div class="col-md-12 py-3">
+          <nav class="nav nav-pills nav-fill" aria-label="{% trans %}Brackets{% endtrans %}">
+            <button :class="{'nav-link': true, 'active': !activeBracket}" @click="activeBracket=null">{% trans %}All{% endtrans %}</button>
+            <template x-for="bracket in (brackets || [])">
+              <button :class="{'nav-link': true, 'active': activeBracket == bracket.id}" x-text="bracket.name" @click="activeBracket=bracket.id"></button>
+            </template>
+          </nav>
+        </div>
+      </template>
+
+      <div class="col-md-12" x-show="(standings || []).length" x-data="{ crewQuery: '' }">
+        <div class="bp-ledger-tools">
+          <div class="bp-search bp-search--inline" role="search">
+            <label for="bp-crew-search" class="visually-hidden">{% if teams_mode %}{% trans %}Find a crew{% endtrans %}{% else %}{% trans %}Find a player{% endtrans %}{% endif %}</label>
+            <i class="fas fa-search" aria-hidden="true"></i>
+            <input id="bp-crew-search" type="search" class="form-control" autocomplete="off" spellcheck="false"
+                   placeholder="{% if teams_mode %}{% trans %}Find a crew…{% endtrans %}{% else %}{% trans %}Find a player…{% endtrans %}{% endif %}" x-model="crewQuery" @keydown.escape="crewQuery = ''">
+          </div>
+          <a class="btn btn-secondary btn-sm" href="#bp-me" x-show="(standings || []).filter(i => activeBracket ? i.bracket_id == activeBracket : true).some(s => bpIsMe(s))" x-cloak
+             @click.prevent="crewQuery = ''; $nextTick(() => { const row = document.getElementById('bp-me'); if (row) row.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); })">{% if teams_mode %}{% trans %}Find my crew{% endtrans %}{% else %}{% trans %}Find me{% endtrans %}{% endif %}</a>
+        </div>
+        <div class="table-responsive">
+          <table class="table table-striped align-middle">
+            <thead>
+            <tr>
+              <th scope="col" class="text-center bp-col-place">{% trans %}Place{% endtrans %}</th>
+              <th scope="col" class="text-start ps-3">{{ get_mode_as_word(capitalize=True) }}</th>
+              <th scope="col" class="text-end">{% trans %}Balance{% endtrans %}</th>
+              {% if Configs.user_mode == 'teams' %}
+              <th scope="col" class="text-end pe-4 bp-col-cut">{% trans %}Cut per member{% endtrans %}</th>
+              {% endif %}
+            </tr>
+            </thead>
+
+            <tbody>
+              <template x-for="(standing, index) in (standings || []).filter(i => activeBracket ? i.bracket_id==activeBracket : true)">
+                <tr x-show="!crewQuery.trim() || String(standing.name).toLowerCase().includes(crewQuery.trim().toLowerCase())"
+                    @mouseenter="index < 10 && $dispatch('bp-highlight', index + 1)" @mouseleave="$dispatch('bp-highlight', null)"
+                    :class="{'bp-row--me': bpIsMe(standing)}" :id="bpIsMe(standing) ? 'bp-me' : null">
+                  <th scope="row" class="text-center">
+                    <span class="bp-rank" :class="{'bp-rank--podium': index < 3}" x-text="String(index + 1).padStart(2, '0')"></span>
+                  </th>
+                  <td class="text-start">
+                    <a :href="standing.account_url" x-text="standing.name"></a>
+                    <template x-if="standing.bracket_name">
+                      <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
+                    </template>
+                    <span class="bp-you" x-show="bpIsMe(standing)">{% if teams_mode %}{% trans %}Your crew{% endtrans %}{% else %}{% trans %}You{% endtrans %}{% endif %}</span>
+                    <span class="bp-wallet" translate="no" x-text="window.bpWallet ? window.bpWallet(standing.account_id + ':' + standing.name) : ''"></span>
+                  </td>
+                  <td class="text-end bp-score">{{ coin('symbol') }}<span x-text="Number(standing.score).toLocaleString()"></span></td>
+                  {% if Configs.user_mode == 'teams' %}
+                  <td class="text-end pe-4 bp-share bp-col-cut">
+                    <template x-if="standing.members && standing.members.length">
+                      <span>{{ coin('symbol') }}<span x-text="(standing.score / standing.members.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
+                        <small x-text="'&times;' + standing.members.length"></small></span>
+                    </template>
+                    <template x-if="!standing.members || !standing.members.length"><span>&mdash;</span></template>
+                  </td>
+                  {% endif %}
+                </tr>
+              </template>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <div class="col-md-12" x-show="!Array.isArray(standings)" x-cloak>
+        <div class="bp-empty">
+          <p class="h3 mb-2">{% trans %}The ledger is sealed{% endtrans %}</p>
+          <p class="mb-0">{% trans %}Balances are hidden right now. They will be posted when the organizers open the books.{% endtrans %}</p>
+        </div>
+      </div>
+
+      <div class="col-md-12" x-show="Array.isArray(standings) && !standings.length">
+        <div class="bp-empty">
+          <p class="h3 mb-2">{% trans %}The ledger is empty{% endtrans %}</p>
+          <p class="mb-0">{% trans %}The first cracked target writes the first entry.{% endtrans %}</p>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/scoreboard.js") }}
+{% endblock %}

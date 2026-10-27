@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="jumbotron">
+    <div class="container">
+      <div class="bp-sheet-meta bp-label"><span>{% trans %}Sheet{% endtrans %} S-04</span><span>{% trans %}Recruiting{% endtrans %}</span></div>
+      <h1>{% trans %}Assemble Your Crew{% endtrans %}</h1>
+    </div>
+  </div>
+  <div class="container">
+    {% include "components/errors.html" %}
+
+    <p class="bp-hero__lede mb-4">
+      {% trans %}Nobody cracks this vault alone. Start a crew and share its name and password with your specialists, or join one that is already recruiting.{% endtrans %}
+    </p>
+
+    {% if integrations.mlc() %}
+      <div class="mb-4">
+        <a class="btn btn-primary" href="{{ url_for('auth.oauth_login') }}">{% trans %}Play with Official Team{% endtrans %}</a>
+      </div>
+    {% endif %}
+
+    <div class="bp-enroll">
+      <a class="bp-enroll__option" href="{{ url_for('teams.new') }}">
+        <span class="bp-label">{% trans %}Option A{% endtrans %}</span>
+        <span class="bp-enroll__title">{% if integrations.mlc() %}{% trans %}Create Unofficial Team{% endtrans %}{% else %}{% trans %}Start a crew{% endtrans %}{% endif %}</span>
+        <span class="bp-enroll__text">{% trans %}Pick a crew name and a password. You become the captain.{% endtrans %}</span>
+        <span class="bp-enroll__cta" aria-hidden="true">&rarr;</span>
+      </a>
+      <a class="bp-enroll__option" href="{{ url_for('teams.join') }}">
+        <span class="bp-label">{% trans %}Option B{% endtrans %}</span>
+        <span class="bp-enroll__title">{% if integrations.mlc() %}{% trans %}Join Unofficial Team{% endtrans %}{% else %}{% trans %}Join a crew{% endtrans %}{% endif %}</span>
+        <span class="bp-enroll__text">{% trans %}Your captain gives you the crew name and password.{% endtrans %}</span>
+        <span class="bp-enroll__cta" aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+
+    <p class="bp-enroll__note bp-marker">{% trans %}The haul is split evenly across the crew.{% endtrans %}</p>
+  </div>
+{% endblock %}

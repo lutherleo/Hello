@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% set code = "429" %}
+  {% set heading = _('Too much noise') %}
+  {% set detail = _('Slow down, you are tripping the alarms. Try again in a moment.') %}
+  {% include "components/error_sheet.html" %}
+{% endblock %}

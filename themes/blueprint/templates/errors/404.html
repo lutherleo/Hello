@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% set code = "404" %}
+  {% set heading = _('Wrong floor') %}
+  {% set detail = _('Nothing on the plans matches this address. Check the sheet and try again.') %}
+  {% include "components/error_sheet.html" %}
+{% endblock %}

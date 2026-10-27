@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+  <div class="jumbotron">
+    <div class="container">
+      <div class="bp-sheet-meta bp-label"><span>{% trans %}Sheet{% endtrans %} S-04</span><span>{% trans %}Recruiting{% endtrans %}</span></div>
+      <h1>{% trans %}Start a Crew{% endtrans %}</h1>
+    </div>
+  </div>
+  <div class="container">
+    <div class="row">
+      <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
+        <div class="bp-permit">
+          <div class="bp-permit__head bp-label">
+            <span>{% trans %}Crew registration{% endtrans %}</span>
+            <span translate="no">{{ Configs.ctf_name }}</span>
+          </div>
+
+        {% include "components/errors.html" %}
+
+        {% with form = Forms.teams.TeamRegisterForm() %}
+          {% from "macros/forms.html" import render_extra_fields %}
+          <form method="POST">
+            <div class="mb-3">
+              <b>{{ form.name.label(class="form-label") }}</b>
+              {{ form.name(class="form-control") }}
+            </div>
+            <div class="mb-3">
+              <b>{{ form.password.label(class="form-label") }}</b>
+              {{ form.password(class="form-control") }}
+            </div>
+
+            {{ render_extra_fields(form.extra) }}
+
+            <div class="row ">
+              <div class="col-md-12">
+                <p class="text-muted">{% trans %}Once the crew exists, give its name and password to your specialists so they can join. Each member gets an equal cut of the haul.{% endtrans %}</p>
+                {{ form.submit(class="btn btn-primary float-end px-4") }}
+              </div>
+            </div>
+            {{ form.nonce() }}
+          </form>
+        {% endwith %}
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}

@@ -1,0 +1,19 @@
+{#
+  Shared body for the error pages. Expects `code` (string), `heading` and
+  optional `detail` to be set by the including template.
+#}
+<div class="container bp-error">
+  <div class="bp-sheet-meta bp-label mb-3">
+    <span>{% trans %}Sheet{% endtrans %} E-{{ code }}</span>
+    <span>{% trans %}Change of plan{% endtrans %}</span>
+  </div>
+  <p class="bp-error__code" aria-hidden="true">{{ code[:-1] }}<span>{{ code[-1] }}</span></p>
+  <h1 class="h2">{{ heading }}</h1>
+  {% if detail %}
+    <p class="bp-hero__lede">{{ detail }}</p>
+  {% endif %}
+  <div class="bp-hero__actions">
+    <a class="btn btn-primary" href="{{ url_for('challenges.listing') }}">{% trans %}Back to the job{% endtrans %}</a>
+    <a class="btn btn-secondary" href="{{ url_for('views.static_html', route='/') }}">{% trans %}Briefing{% endtrans %}</a>
+  </div>
+</div>

@@ -1,0 +1,520 @@
+"use strict";
+
+/*
+ * Blueprint theme runtime.
+ *
+ * - Replaces core's color_mode_switcher: "dark" renders as a cyanotype
+ *   blueprint, "light" as a whiteprint. Blueprint is the default when the
+ *   visitor has never chosen, regardless of OS preference.
+ * - Draws the scoreboard's top-ten graph as SVG step lines in place of
+ *   core's ECharts canvas, so it takes the print's colors from CSS.
+ * - Fills [data-bp-countdown] blocks in page content with the time to the
+ *   CTF's start or end.
+ */
+(function () {
+  var STORAGE_KEY = "theme";
+
+  function storedTheme() {
+    try {
+      return localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      return null;
+    }
+  }
+
+  function storeTheme(theme) {
+    try {
+      localStorage.setItem(STORAGE_KEY, theme);
+    } catch (e) {
+      // Private mode or blocked storage: the choice lasts for this page only.
+    }
+  }
+
+  var currentTheme = storedTheme() === "light" ? "light" : "dark";
+  document.documentElement.setAttribute("data-bs-theme", currentTheme);
+
+  function syncSwitches() {
+    // Keep the browser chrome in step with the print.
+    var meta = document.querySelector('meta[name="theme-color"]');
+    if (meta) meta.setAttribute("content", currentTheme === "dark" ? "#0f3c74" : "#f3efe4");
+    document.querySelectorAll(".theme-switch").forEach(function (button) {
+      var next = currentTheme === "dark" ? "whiteprint" : "blueprint";
+      button.setAttribute("aria-label", "Switch to " + next);
+      button.setAttribute("title", "Switch to " + next);
+      var label = button.querySelector("[data-print-label]");
+      if (label) {
+        label.textContent = currentTheme === "dark" ? "Blueprint" : "Whiteprint";
+      }
+    });
+  }
+
+  window.addEventListener("DOMContentLoaded", function () {
+    syncSwitches();
+    document.querySelectorAll(".theme-switch").forEach(function (button) {
+      button.addEventListener("click", function (event) {
+        event.preventDefault();
+        currentTheme = currentTheme === "dark" ? "light" : "dark";
+        document.documentElement.setAttribute("data-bs-theme", currentTheme);
+        storeTheme(currentTheme);
+        syncSwitches();
+      });
+    });
+  });
+
+  // Countdown: any element with [data-bp-countdown] in page content shows the
+  // time to the CTF's start, then to its end, from CTFd's configured times.
+  function formatSpan(seconds) {
+    var d = Math.floor(seconds / 86400);
+    var h = Math.floor((seconds % 86400) / 3600);
+    var m = Math.floor((seconds % 3600) / 60);
+    var s = Math.floor(seconds % 60);
+    function pad(n) {
+      return String(n).padStart(2, "0");
+    }
+    return (d > 0 ? d + "d " : "") + pad(h) + "h " + pad(m) + "m " + pad(s) + "s";
+  }
+
+  function startCountdowns() {
+    var nodes = document.querySelectorAll("[data-bp-countdown]");
+    if (!nodes.length || !window.init) {
+      return;
+    }
+    var start = window.init.start ? Number(window.init.start) : null;
+    var end = window.init.end ? Number(window.init.end) : null;
+
+    function render() {
+      var now = Date.now() / 1000;
+      var label;
+      var value;
+      if (start && now < start) {
+        label = "Job starts in";
+        value = formatSpan(start - now);
+      } else if (end && now < end) {
+        label = "Get out in";
+        value = formatSpan(end - now);
+      } else if (end && now >= end) {
+        label = "Status";
+        value = "Job’s done";
+      } else {
+        label = "Status";
+        value = "In progress";
+      }
+      var shortLabel = { "Job starts in": "Starts in", "Get out in": "Ends in" }[label] || "";
+      nodes.forEach(function (node) {
+        var compact = node.hasAttribute("data-bp-compact");
+        var l = node.querySelector("[data-bp-countdown-label]");
+        var v = node.querySelector("[data-bp-countdown-value]");
+        if (compact && label === "Status") {
+          node.hidden = true;
+          return;
+        }
+        node.hidden = false;
+        if (l) l.textContent = compact ? shortLabel : label;
+        if (v) v.textContent = value;
+      });
+    }
+
+    render();
+    setInterval(render, 1000);
+  }
+
+  window.addEventListener("DOMContentLoaded", startCountdowns);
+
+  // Crew roles: each challenge category is a specialty on the job. Organizers
+  // can rename or add roles with theme_settings.category_roles, e.g.
+  // {"category_roles": {"pwn": "The Demolitions", "osint": "The Lookout"}}.
+  var CREW_ROLES = {
+    pwn: "The Demolitions",
+    "binary exploitation": "The Demolitions",
+    rev: "The Safecracker",
+    reversing: "The Safecracker",
+    "reverse engineering": "The Safecracker",
+    web: "The Inside Man",
+    crypto: "The Codebreaker",
+    cryptography: "The Codebreaker",
+    forensics: "The Cleaner",
+    "incident response": "The Cleaner",
+    misc: "The Grifter",
+    osint: "The Lookout",
+    recon: "The Lookout",
+    hardware: "The Wheelman",
+    intro: "The Rookie",
+  };
+
+  // A made-up wallet ID for each crew on the ledger: a stable hash of the
+  // account, shown for flavor. It is not an address on any real chain.
+  window.bpWallet = function (seed) {
+    var h1 = 0x811c9dc5;
+    var h2 = 0x9e3779b9;
+    var text = String(seed);
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+      h2 = Math.imul(h2 ^ c, 0x5bd1e995) >>> 0;
+    }
+    var hex = (h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0"));
+    return "hb_" + hex.slice(0, 6) + "…" + hex.slice(-4);
+  };
+
+  // Is this scoreboard entry the viewer's own account (their crew in teams mode)?
+  window.bpIsMe = function (standing) {
+    if (!window.init || !standing) return false;
+    var mine = window.init.userMode === "teams" ? window.init.teamId : window.init.userId;
+    return mine !== null && mine !== undefined && Number(standing.account_id) === Number(mine);
+  };
+
+  // Copy to clipboard, with a fallback for non-secure origins.
+  // `from` is the button that asked: the fallback textarea goes inside its
+  // modal, because Bootstrap's focus trap pulls focus out of anything else.
+  function copyText(text, from) {
+    if (navigator.clipboard && window.isSecureContext) {
+      return navigator.clipboard.writeText(text);
+    }
+    return new Promise(function (resolve, reject) {
+      var container = (from && from.closest(".modal")) || document.body;
+      var area = document.createElement("textarea");
+      area.value = text;
+      area.setAttribute("readonly", "");
+      area.style.position = "fixed";
+      area.style.opacity = "0";
+      container.appendChild(area);
+      area.focus();
+      area.select();
+      var ok = false;
+      try {
+        ok = document.execCommand("copy");
+      } catch (e) {
+        ok = false;
+      }
+      container.removeChild(area);
+      if (from) from.focus();
+      ok ? resolve() : reject();
+    });
+  }
+
+  // Challenge window: a copy button beside the connection info.
+  document.addEventListener("shown.bs.modal", function (event) {
+    var modal = event.target;
+    modal.querySelectorAll(".challenge-connection-info").forEach(function (info) {
+      if (info.querySelector(".bp-copy")) return;
+      var text = info.textContent.trim();
+      if (!text) return;
+      var button = document.createElement("button");
+      button.type = "button";
+      button.className = "bp-copy";
+      button.textContent = "Copy";
+      button.setAttribute("aria-label", "Copy connection info");
+      button.setAttribute("aria-live", "polite");
+      button.addEventListener("click", function () {
+        copyText(text, button).then(
+          function () {
+            button.textContent = "Copied";
+            setTimeout(function () {
+              button.textContent = "Copy";
+            }, 1600);
+          },
+          function () {
+            button.textContent = "Select and copy";
+          }
+        );
+      });
+      info.appendChild(button);
+    });
+  });
+
+  window.bpCrewRole = function (category) {
+    var key = String(category || "").trim().toLowerCase();
+    var settings = window.init && window.init.themeSettings;
+    var custom = settings && settings.category_roles;
+    if (custom) {
+      for (var name in custom) {
+        if (String(name).trim().toLowerCase() === key) {
+          return custom[name];
+        }
+      }
+    }
+    return CREW_ROLES[key] || "";
+  };
+
+  // Scoreboard graph: the top ten drawn as step lines on the sheet's grid.
+  // Replaces core's ECharts graph so every stroke and label comes from the
+  // theme's CSS variables and follows the print switch with no redraw.
+  var PAD = { top: 18, right: 20, bottom: 34, left: 52 };
+
+  function escapeHtml(text) {
+    return String(text).replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+
+  function niceStep(max, count) {
+    var raw = max / count;
+    var mag = Math.pow(10, Math.floor(Math.log10(raw || 1)));
+    var norm = raw / mag;
+    var step = norm <= 1 ? 1 : norm <= 2 ? 2 : norm <= 2.5 ? 2.5 : norm <= 5 ? 5 : 10;
+    return step * mag;
+  }
+
+  function formatTick(ms, spanMs) {
+    var d = new Date(ms);
+    var month = d.toLocaleString(undefined, { month: "short" });
+    var hh = String(d.getHours()).padStart(2, "0");
+    var mm = String(d.getMinutes()).padStart(2, "0");
+    return spanMs > 2 * 86400000 ? month + " " + d.getDate() : month + " " + d.getDate() + " " + hh + ":" + mm;
+  }
+
+  function buildSeries(data) {
+    return Object.keys(data)
+      .map(function (key) {
+        var entry = data[key];
+        var total = 0;
+        var points = (entry.solves || [])
+          .map(function (solve) {
+            return { t: new Date(solve.date).getTime(), v: solve.value || 0 };
+          })
+          .sort(function (a, b) {
+            return a.t - b.t;
+          })
+          .map(function (p) {
+            total += p.v;
+            return { t: p.t, score: total };
+          });
+        return { rank: Number(key), name: entry.name, url: entry.account_url, score: total, points: points };
+      })
+      .sort(function (a, b) {
+        return a.rank - b.rank;
+      });
+  }
+
+  function drawGraph(series, active, width) {
+    var SVG_W = Math.max(280, Math.round(width || 1000));
+    var SVG_H = SVG_W < 600 ? 280 : 380;
+    var times = [];
+    series.forEach(function (s) {
+      s.points.forEach(function (p) {
+        times.push(p.t);
+      });
+    });
+    if (!times.length) {
+      return "";
+    }
+    var now = Date.now();
+    var start = window.init && window.init.start ? Number(window.init.start) * 1000 : null;
+    var end = window.init && window.init.end ? Number(window.init.end) * 1000 : null;
+    var t0 = Math.min.apply(null, times.concat(start ? [start] : []));
+    var t1 = Math.max(Math.max.apply(null, times), end ? Math.min(now, end) : now);
+    if (t1 <= t0) {
+      t1 = t0 + 3600000;
+    }
+    var maxScore = Math.max.apply(
+      null,
+      series.map(function (s) {
+        return s.score;
+      }).concat([1])
+    );
+    var step = niceStep(maxScore, 5);
+    var yMax = Math.ceil(maxScore / step) * step;
+
+    var plotW = SVG_W - PAD.left - PAD.right;
+    var plotH = SVG_H - PAD.top - PAD.bottom;
+    function x(t) {
+      return PAD.left + ((t - t0) / (t1 - t0)) * plotW;
+    }
+    function y(v) {
+      return PAD.top + plotH - (v / yMax) * plotH;
+    }
+
+    var out = [];
+    for (var v = 0; v <= yMax + 0.001; v += step) {
+      out.push(
+        '<line class="bp-graph__grid" x1="' + PAD.left + '" x2="' + (SVG_W - PAD.right) +
+          '" y1="' + y(v) + '" y2="' + y(v) + '"/>' +
+          '<text class="bp-graph__tick" x="' + (PAD.left - 10) + '" y="' + (y(v) + 4) +
+          '" text-anchor="end">' + Math.round(v) + "</text>"
+      );
+    }
+    var xTicks = SVG_W < 600 ? 2 : 5;
+    for (var i = 0; i <= xTicks; i++) {
+      var t = t0 + ((t1 - t0) * i) / xTicks;
+      var anchor = i === 0 ? "start" : i === xTicks ? "end" : "middle";
+      out.push(
+        '<line class="bp-graph__grid" x1="' + x(t) + '" x2="' + x(t) + '" y1="' + PAD.top +
+          '" y2="' + (SVG_H - PAD.bottom) + '"/>' +
+          '<text class="bp-graph__tick" x="' + x(t) + '" y="' + (SVG_H - 10) + '" text-anchor="' + anchor +
+          '">' + escapeHtml(formatTick(t, t1 - t0)) + "</text>"
+      );
+    }
+    out.push(
+      '<path class="bp-graph__axis" d="M' + PAD.left + " " + PAD.top + "V" + (SVG_H - PAD.bottom) + "H" +
+        (SVG_W - PAD.right) + '"/>'
+    );
+
+    // Draw the leader last so it sits on top of the pack.
+    series
+      .slice()
+      .reverse()
+      .forEach(function (s) {
+        var d = "M" + x(t0) + " " + y(0);
+        s.points.forEach(function (p) {
+          d += "H" + x(p.t) + "V" + y(p.score);
+        });
+        d += "H" + x(t1);
+        var state = active === null ? "" : active === s.rank ? " is-active" : " is-dimmed";
+        var last = s.points.length ? s.points[s.points.length - 1] : { t: t0, score: 0 };
+        out.push(
+          '<g class="bp-graph__series' + state + '" style="--series: var(--bp-series-' + s.rank + ')">' +
+            '<path d="' + d + '"/>' +
+            '<rect x="' + (x(last.t) - 3) + '" y="' + (y(last.score) - 3) + '" width="6" height="6"/>' +
+            "</g>"
+        );
+      });
+
+    return (
+      '<svg viewBox="0 0 ' + SVG_W + " " + SVG_H + '" width="' + SVG_W + '" height="' + SVG_H + '" aria-hidden="true" focusable="false">' +
+      out.join("") +
+      "</svg>"
+    );
+  }
+
+  // Profile and team pages keep core's ECharts "score over time" graph. Core
+  // deep-merges window.userScoreGraphChartOptions / teamScoreGraphChartOptions
+  // into its option, but its merge throws on nested objects the option lacks.
+  // Objects that do not inherit from Object are copied whole, not recursed, so
+  // every nested style below is built with bare(). ECharts itself calls
+  // hasOwnProperty on them, so their prototype provides just that.
+  var BARE_PROTO = Object.create(null);
+  BARE_PROTO.hasOwnProperty = Object.prototype.hasOwnProperty;
+
+  function bare(fields) {
+    var out = Object.create(BARE_PROTO);
+    for (var key in fields) {
+      out[key] = fields[key];
+    }
+    return out;
+  }
+
+  function cssValue(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // Core labels the time axis with full Date strings; shorten them. Numbers
+  // (the value axis) pass through.
+  function shortDate(value) {
+    if (typeof value === "number") return value.toLocaleString();
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return value;
+    return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function profileChartOptions() {
+    var ink = cssValue("--bp-ink");
+    var muted = cssValue("--bp-ink-muted");
+    var line = cssValue("--bp-line");
+    var grid = cssValue("--bp-grid-major");
+    var wash = cssValue("--bp-wash");
+    var mono = cssValue("--bp-font-mono");
+    var axis = function () {
+      return {
+        axisLine: bare({ show: true, lineStyle: { color: line } }),
+        axisLabel: bare({ color: muted, fontFamily: mono, formatter: shortDate }),
+        splitLine: bare({ lineStyle: { color: grid } }),
+      };
+    };
+    return {
+      backgroundColor: "transparent",
+      textStyle: bare({ color: ink, fontFamily: mono }),
+      title: { textStyle: bare({ color: ink, fontFamily: cssValue("--bp-font-display"), fontSize: 18 }) },
+      legend: { textStyle: bare({ color: muted }) },
+      tooltip: {
+        backgroundColor: cssValue("--bp-ground"),
+        borderColor: line,
+        textStyle: bare({ color: ink, fontFamily: mono }),
+      },
+      toolbox: { iconStyle: bare({ borderColor: muted }) },
+      xAxis: [axis()],
+      yAxis: [axis()],
+      dataZoom: [
+        {
+          borderColor: line,
+          fillerColor: wash,
+          textStyle: bare({ color: muted }),
+          dataBackground: bare({ lineStyle: { color: muted }, areaStyle: { color: wash } }),
+        },
+      ],
+    };
+  }
+
+  // An organizer who assigns these globals (e.g. in the theme header) keeps
+  // their own options; otherwise the theme's are used.
+  ["userScoreGraphChartOptions", "teamScoreGraphChartOptions"].forEach(function (name) {
+    var override;
+    Object.defineProperty(window, name, {
+      configurable: true,
+      get: function () {
+        return override !== undefined ? override : profileChartOptions();
+      },
+      set: function (value) {
+        override = value;
+      },
+    });
+  });
+
+  document.addEventListener("alpine:init", function () {
+    window.Alpine.data("BlueprintGraph", function () {
+      return {
+        series: [],
+        active: null,
+        pinned: null,
+        bracket: null,
+        loaded: false,
+        sealed: false,
+        width: 1000,
+
+        async update() {
+          var data = await window.CTFd.pages.scoreboard.getScoreboardDetail(10, this.bracket);
+          // No data at all (not an empty object) means the API refused: scores are hidden.
+          this.sealed = data === undefined || data === null;
+          this.series = buildSeries(data || {});
+          this.loaded = true;
+          var self = this;
+          this.$nextTick(function () {
+            self.measure();
+          });
+        },
+
+        svg() {
+          var focus = this.active !== null ? this.active : this.pinned;
+          return drawGraph(this.series, focus, this.width);
+        },
+
+        summary() {
+          if (!this.series.length) {
+            return "";
+          }
+          var lead = this.series[0];
+          return "Score over time for the top " + this.series.length + ". " + lead.name + " leads with " + lead.score + " points.";
+        },
+
+        measure() {
+          if (this.$refs.plot && this.$refs.plot.clientWidth) {
+            this.width = this.$refs.plot.clientWidth;
+          }
+        },
+
+        init() {
+          var self = this;
+          this.$nextTick(function () {
+            self.measure();
+          });
+          window.addEventListener("resize", function () {
+            self.measure();
+          });
+          this.update();
+          setInterval(function () {
+            self.update();
+          }, window.scoreboardUpdateInterval || 300000);
+        },
+      };
+    });
+  });
+})();

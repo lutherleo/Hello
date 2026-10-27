@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% set code = "502" %}
+  {% set heading = _('Lost the feed') %}
+  {% set detail = _('The server behind this door did not answer. Try again shortly.') %}
+  {% include "components/error_sheet.html" %}
+{% endblock %}

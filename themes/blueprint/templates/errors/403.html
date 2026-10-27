@@ -1,0 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+  {% set code = "403" %}
+  {% set heading = error or _('Restricted area') %}
+  {% set detail = _('Wrong badge for this door.') %}
+  {% include "components/error_sheet.html" %}
+{% endblock %}

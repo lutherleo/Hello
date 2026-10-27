@@ -1,0 +1,240 @@
+{% extends "base.html" %}
+{% from "macros/coin.html" import coin %}
+
+{% block content %}
+  <div
+    x-data="ChallengeBoard"
+    @load-challenges.window="loadChallenges()"
+    @load-challenge.window="loadChallenge($event.detail)"
+  >
+    <div
+        x-ref="challengeWindow" id="challenge-window" class="modal fade" tabindex="-1" role="dialog" x-data=""
+        x-html="$store.challenge.data.view"
+    ></div>
+
+    {# Board-level helpers live in a nested scope so core's ChallengeBoard stays untouched. #}
+    <div x-data="{
+      hideSolved: false,
+      query: '',
+      matches(c) {
+        const q = this.query.trim().toLowerCase();
+        if (!q) return true;
+        const hay = [c.name, c.category, ...(c.tags || []).map(t => t.value)].join(' ').toLowerCase();
+        return q.split(/\s+/).every(word => hay.includes(word));
+      },
+      shown(c) { return (!this.hideSolved || !c.solved_by_me) && this.matches(c); },
+      focusSearch(e) {
+        const tag = (document.activeElement && document.activeElement.tagName) || '';
+        if (e.key !== '/' || ['INPUT', 'TEXTAREA', 'SELECT'].includes(tag) || document.querySelector('.modal.show')) return;
+        e.preventDefault();
+        this.$refs.search && this.$refs.search.focus();
+      },
+      sectionKey(i) { return i < 26 ? String.fromCharCode(65 + i) : 'Z' + (i - 25); },
+      partNo(i, j) { return this.sectionKey(i) + '-' + String(j + 1).padStart(2, '0'); },
+      slug(category) { return 'section-' + String(category).toLowerCase().replace(/[^a-z0-9]+/g, '-'); },
+      locked(c) { return c.type === 'hidden'; },
+      role(category) { return window.bpCrewRole ? window.bpCrewRole(category) : ''; },
+      list() { return Array.isArray(this.challenges) ? this.challenges : []; },
+      score: null,
+      scored() { return this.score !== null ? this.score : this.list().filter(c => c.solved_by_me).reduce((sum, c) => sum + (c.value || 0), 0); },
+      total() { return this.list().reduce((sum, c) => sum + (c.value || 0), 0); },
+      solvedCount(list) { return list.filter(c => c.solved_by_me).length; },
+      visible(list) { return list.filter(c => this.shown(c)); },
+      percent() { const t = this.total(); return t ? Math.min(100, (this.scored() / t) * 100) : 0; },
+      crewSize: 1,
+      cut() { return (this.scored() / this.crewSize).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+      async init() {
+        // Remember the hide-cracked choice for this viewer; storage may be unavailable.
+        try { this.hideSolved = localStorage.getItem('bp-hide-cracked') === '1'; } catch (e) {}
+        this.$watch('hideSolved', v => { try { localStorage.setItem('bp-hide-cracked', v ? '1' : '0'); } catch (e) {} });
+
+        await this.refreshAccount(true);
+      },
+      async getJSON(path) {
+        try {
+          const r = await fetch(window.init.urlRoot + path, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+          return r.ok ? await r.json() : null;
+        } catch (e) { return null; }
+      },
+      // The haul is the server's score (awards and hint costs included), not just
+      // the sum of solved targets. In teams mode it is split across the crew as the
+      // scoreboard counts it (hidden and banned members excluded).
+      async refreshAccount(withCrew) {
+        if (!window.init || !window.init.userId) return;
+        const teams = window.init.userMode === 'teams';
+        if (teams && !window.init.teamId) return;
+        const me = await this.getJSON(teams ? '/api/v1/teams/me' : '/api/v1/users/me');
+        if (me && me.data && typeof me.data.score === 'number') this.score = me.data.score;
+        if (!teams || !withCrew) return;
+        const board = await this.getJSON('/api/v1/scoreboard');
+        const entry = board && Array.isArray(board.data) && board.data.find(s => Number(s.account_id) === Number(window.init.teamId));
+        const members = entry && Array.isArray(entry.members) && entry.members.length ? entry.members : (me && me.data && me.data.members);
+        if (Array.isArray(members) && members.length) this.crewSize = members.length;
+      }
+    }" @keydown.window="focusSearch($event)" @load-challenges.window="refreshAccount(false)">
+
+      <div class="jumbotron">
+        <div class="container">
+          <div class="bp-sheet-meta bp-label">
+            <span>{% trans %}Sheet{% endtrans %} S-01</span>
+            <span>{% trans %}Exchange floor plan{% endtrans %}</span>
+            <span x-show="loaded && list().length" x-cloak><span x-text="list().length ? getCategories().length : 0"></span> {% trans %}specialties{% endtrans %} &middot; <span x-text="list().length"></span> {% trans %}targets{% endtrans %}</span>
+          </div>
+          <h1>{% trans %}The Job{% endtrans %}</h1>
+        </div>
+      </div>
+
+      <div class="container">
+        <div class="row">
+          <div class="col-md-12">
+            {% include "components/errors.html" %}
+          </div>
+        </div>
+
+        <div x-show="!loaded">
+          <div class="min-vh-50 d-flex align-items-center">
+            <div class="text-center w-100">
+              <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner" aria-hidden="true"></i>
+              <span class="visually-hidden">{% trans %}Loading the plans…{% endtrans %}</span>
+            </div>
+          </div>
+        </div>
+
+        <div x-show="loaded" x-cloak>
+          <template x-if="list().length === 0">
+            <div class="bp-empty">
+              <p class="h3 mb-2">{% trans %}The board is empty.{% endtrans %}</p>
+              <p class="mb-0">{% trans %}Targets go up when the doors open. Get your crew ready.{% endtrans %}</p>
+            </div>
+          </template>
+
+          <template x-if="list().length > 0">
+            <div class="bp-board-head">
+              {% if authed() %}
+              <div class="bp-gauge" role="group" aria-label="{% trans %}Your crew's haul{% endtrans %}">
+                <p class="bp-label mb-1">{% if Configs.user_mode == 'teams' %}{% trans %}Your crew's haul{% endtrans %}{% else %}{% trans %}Your haul{% endtrans %}{% endif %}</p>
+                <div class="bp-gauge__figures">
+                  <span class="bp-gauge__value"><span class="bp-coin">{{ coin('symbol') }}</span><span x-text="scored().toLocaleString()"></span></span>
+                  <span class="bp-gauge__of">/ {{ coin('symbol') }}<span x-text="total().toLocaleString()"></span> {% trans %}in cold storage{% endtrans %}
+                    &middot; <span x-text="solvedCount(list())"></span>/<span x-text="list().length"></span> {% trans %}cracked{% endtrans %}</span>
+                </div>
+                <div class="bp-gauge__track">
+                  <div class="bp-gauge__fill" :style="`width: ${percent()}%`" :data-empty="scored() === 0"></div>
+                </div>
+                <div class="bp-gauge__scale" aria-hidden="true">
+                  <span>0</span><span x-text="Math.round(percent()) + '%'"></span><span>{{ coin('symbol') }}<span x-text="total()"></span></span>
+                </div>
+                {% if Configs.user_mode == 'teams' %}
+                <p class="bp-cut" x-show="crewSize > 1" x-cloak>
+                  {% trans %}Your cut{% endtrans %}
+                  <strong>{{ coin('symbol') }}<span x-text="cut()"></span></strong>
+                  <span>&middot; {% trans %}split{% endtrans %} <span x-text="crewSize"></span> {% trans %}ways{% endtrans %}</span>
+                </p>
+                {% endif %}
+              </div>
+              {% else %}
+              <div>
+                <p class="bp-hero__lede mb-0">
+                  {% trans %}You're casing the joint without credentials.{% endtrans %}
+                  <a href="{{ url_for('auth.login', next=request.full_path) }}">{% trans %}Check in{% endtrans %}</a>
+                  {% trans %}to submit flags.{% endtrans %}
+                </p>
+              </div>
+              {% endif %}
+
+              <nav class="bp-index" aria-label="{% trans %}Specialties{% endtrans %}">
+                <template x-for="(category, ci) in (list().length ? getCategories() : [])" :key="category">
+                  <a :href="'#' + slug(category)">
+                    <span class="bp-index__key" x-text="sectionKey(ci)"></span>
+                    <span x-text="category"></span>
+                    <span class="bp-index__count" x-text="solvedCount(getChallenges(category)) + '/' + getChallenges(category).length"></span>
+                  </a>
+                </template>
+                {% if authed() %}
+                <button type="button" :aria-pressed="hideSolved.toString()" @click="hideSolved = !hideSolved">
+                  {% trans %}Hide cracked{% endtrans %}
+                </button>
+                {% endif %}
+              </nav>
+            </div>
+          </template>
+
+          <template x-if="list().length > 0">
+            <div class="bp-search" role="search">
+              <label for="bp-search-input" class="visually-hidden">{% trans %}Find a target{% endtrans %}</label>
+              <i class="fas fa-search" aria-hidden="true"></i>
+              <input id="bp-search-input" x-ref="search" type="search" class="form-control" autocomplete="off"
+                     placeholder="{% trans %}Find a target by name, specialty or tag…{% endtrans %}" spellcheck="false" enterkeyhint="search"
+                     x-model="query" @keydown.escape="query = ''; $el.blur()">
+              <kbd class="bp-search__key" x-show="!query" aria-hidden="true">/</kbd>
+            </div>
+          </template>
+
+          <template x-if="list().length > 0 && !query.trim() && hideSolved && !list().some(c => shown(c))">
+            <div class="bp-empty mt-4" role="status">
+              <p class="h3 mb-2">{% trans %}Every target on the board is cracked.{% endtrans %}</p>
+              <p class="mb-0">{% trans %}New targets may still go up.{% endtrans %} <button type="button" class="btn btn-link p-0 align-baseline" @click="hideSolved = false">{% trans %}Show cracked targets{% endtrans %}</button></p>
+            </div>
+          </template>
+
+          <template x-if="list().length > 0 && query.trim() && !list().some(c => shown(c))">
+            <div class="bp-empty mt-4" role="status">
+              <p class="h3 mb-2">{% trans %}No targets match{% endtrans %} &ldquo;<span x-text="query.trim()"></span>&rdquo;</p>
+              <p class="mb-0"><button type="button" class="btn btn-link p-0" @click="query = ''">{% trans %}Clear the search{% endtrans %}</button></p>
+            </div>
+          </template>
+
+          <template x-for="(category, ci) in (list().length ? getCategories() : [])" :key="category">
+            <section class="bp-section" :id="slug(category)" x-show="visible(getChallenges(category)).length > 0">
+              <header class="bp-section__head">
+                <span class="bp-section__key" x-text="sectionKey(ci)" aria-hidden="true"></span>
+                <h2 class="bp-section__title" x-text="category"></h2>
+                <span class="bp-section__role" x-show="role(category)" x-text="role(category)"></span>
+                <span class="bp-section__rule" aria-hidden="true"></span>
+                <span class="bp-section__count">
+                  <span x-text="solvedCount(getChallenges(category))"></span>/<span x-text="getChallenges(category).length"></span> {% trans %}cracked{% endtrans %}
+                </span>
+              </header>
+
+              <div class="bp-parts challenges-row">
+                <template x-for="(c, j) in getChallenges(category)" :key="c.id">
+                  <button
+                      x-show="shown(c)"
+                      type="button"
+                      class="challenge-button bp-part"
+                      :class="[
+                        c.solved_by_me ? 'challenge-solved' : '',
+                        locked(c) ? 'bp-part--locked' : '',
+                        ...c.tags.map((tag) => `tag-${tag.value.replace(/ /g, '-')}`),
+                      ]"
+                      :value="c.id"
+                      :disabled="locked(c)"
+                      :aria-label="`${partNo(ci, j)} ${c.name}, ${c.value} {{ coin('name') }}${c.solved_by_me ? ', cracked' : ''}`"
+                      @click="loadChallenge(c.id)"
+                  >
+                    <span class="bp-part__top">
+                      <span class="bp-part__no" translate="no" x-text="partNo(ci, j)"></span>
+                      <span x-show="locked(c)">{% trans %}sealed{% endtrans %}</span>
+                    </span>
+                    <span class="bp-part__name" x-text="c.name"></span>
+                    <span class="bp-part__foot">
+                      <span class="bp-part__value"><span class="bp-coin">{{ coin('symbol') }}</span><span x-text="c.value"></span></span>
+                      <span class="bp-part__solves" x-show="c.solves !== null && c.solves !== undefined">
+                        <span x-text="c.solves"></span> <span x-show="c.solves === 1">{% trans %}solve{% endtrans %}</span><span x-show="c.solves !== 1">{% trans %}solves{% endtrans %}</span>
+                      </span>
+                    </span>
+                    <span class="bp-part__stamp" x-show="c.solved_by_me" aria-hidden="true">{% trans %}Cracked{% endtrans %}</span>
+                  </button>
+                </template>
+              </div>
+            </section>
+          </template>
+        </div>
+      </div>
+    </div>
+  </div>
+{% endblock %}
+
+{% block scripts %}
+  {{ Assets.js("assets/js/challenges.js") }}
+{% endblock %}

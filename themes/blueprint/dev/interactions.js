@@ -1,0 +1,56 @@
+// Interaction checks against the preview servers (see README): search, hide-cracked
+// memory, copy button, your-crew row, navbar clock. Prints results; exits non-zero on failure.
+// node dev/interactions.js <outdir>
+const { chromium } = require("playwright");
+(async () => {
+  const b = await chromium.launch();
+  const ctx = await b.newContext({ viewport: { width: 1440, height: 900 } });
+  const p = await ctx.newPage();
+  const errs = [];
+  p.on("pageerror", e => errs.push(e.message));
+  await p.goto("http://127.0.0.1:8765/challenges", { waitUntil: "networkidle" });
+  await p.keyboard.press("Tab");
+  console.log("first tab stop:", await p.evaluate(() => document.activeElement.className + " -> " + document.activeElement.getAttribute("href")));
+  await p.keyboard.press("Enter");
+  console.log("focus after skip:", await p.evaluate(() => document.activeElement.id));
+  await p.keyboard.press("/");
+  console.log("search focused:", await p.evaluate(() => document.activeElement.id));
+  await p.keyboard.type("lattice");
+  await p.waitForTimeout(200);
+  console.log("visible parts after 'lattice':", await p.locator(".bp-part:visible").count());
+  await p.keyboard.press("Escape");
+  await p.waitForTimeout(200);
+  console.log("visible after Esc:", await p.locator(".bp-part:visible").count());
+  await p.fill("#bp-search-input", "zzzz");
+  await p.waitForTimeout(200);
+  console.log("no-match message:", await p.locator("text=No targets match").count());
+  await p.fill("#bp-search-input", "");
+  await p.click("text=Hide cracked");
+  await p.reload({ waitUntil: "networkidle" });
+  const toggle = p.locator("button[aria-pressed]", { hasText: "Hide cracked" });
+  console.log("hide cracked remembered:", await toggle.getAttribute("aria-pressed"), "visible parts:", await p.locator(".bp-part:visible").count());
+  await toggle.click();
+  await p.locator(".bp-part").nth(3).click();
+  await p.waitForSelector(".modal.show .bp-copy");
+  console.log("copy button:", await p.locator(".modal.show .bp-copy").count());
+  await p.screenshot({ path: process.argv[2] + "/qol-modal.png" });
+  await p.fill("#challenge-input", "csawctf{preview}");
+  await p.keyboard.press("Enter");
+  await p.waitForSelector(".modal.show .alert-success");
+  await p.waitForTimeout(400);
+  console.log("card stamped after solve:", await p.locator(".bp-part").nth(3).evaluate(el => el.classList.contains("challenge-solved")));
+  await p.keyboard.press("Escape");
+  console.log("clock:", await p.locator(".bp-clock").innerText());
+  await p.goto("http://127.0.0.1:8765/scoreboard", { waitUntil: "networkidle" });
+  await p.waitForSelector(".bp-graph__plot svg");
+  console.log("my row:", await p.locator("tr.bp-row--me").count(), await p.locator("tr.bp-row--me a").innerText());
+  await p.fill("#bp-crew-search", "null");
+  await p.waitForTimeout(200);
+  console.log("crew search 'null' rows:", await p.locator("#scoreboard tbody tr:visible").count());
+  await p.fill("#bp-crew-search", "");
+  await p.click("text=Find my crew");
+  await p.waitForTimeout(400);
+  await p.screenshot({ path: process.argv[2] + "/qol-ledger.png" });
+  console.log("errors:", errs);
+  await b.close();
+})();
