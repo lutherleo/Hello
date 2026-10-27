@@ -2,7 +2,7 @@
 
 {% block content %}
   {% set code = "403" %}
-  {% set heading = error or _('Forbidden') %}
-  {% set detail = _('This sheet is restricted.') %}
+  {% set heading = error or _('Restricted area') %}
+  {% set detail = _('Wrong badge for this door.') %}
   {% include "components/error_sheet.html" %}
 {% endblock %}

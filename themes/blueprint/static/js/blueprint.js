@@ -84,17 +84,17 @@
       var label;
       var value;
       if (start && now < start) {
-        label = "Opens in";
+        label = "Job starts in";
         value = formatSpan(start - now);
       } else if (end && now < end) {
-        label = "Closes in";
+        label = "Get out in";
         value = formatSpan(end - now);
       } else if (end && now >= end) {
         label = "Status";
-        value = "Closed";
+        value = "Job’s done";
       } else {
         label = "Status";
-        value = "Open";
+        value = "In progress";
       }
       nodes.forEach(function (node) {
         var l = node.querySelector("[data-bp-countdown-label]");
@@ -109,6 +109,41 @@
   }
 
   window.addEventListener("DOMContentLoaded", startCountdowns);
+
+  // Crew roles: each challenge category is a specialty on the job. Organizers
+  // can rename or add roles with theme_settings.category_roles, e.g.
+  // {"category_roles": {"pwn": "The Demolitions", "osint": "The Lookout"}}.
+  var CREW_ROLES = {
+    pwn: "The Demolitions",
+    "binary exploitation": "The Demolitions",
+    rev: "The Safecracker",
+    reversing: "The Safecracker",
+    "reverse engineering": "The Safecracker",
+    web: "The Inside Man",
+    crypto: "The Codebreaker",
+    cryptography: "The Codebreaker",
+    forensics: "The Cleaner",
+    "incident response": "The Cleaner",
+    misc: "The Grifter",
+    osint: "The Lookout",
+    recon: "The Lookout",
+    hardware: "The Wheelman",
+    intro: "The Rookie",
+  };
+
+  window.bpCrewRole = function (category) {
+    var key = String(category || "").trim().toLowerCase();
+    var settings = window.init && window.init.themeSettings;
+    var custom = settings && settings.category_roles;
+    if (custom) {
+      for (var name in custom) {
+        if (String(name).trim().toLowerCase() === key) {
+          return custom[name];
+        }
+      }
+    }
+    return CREW_ROLES[key] || "";
+  };
 
   // Scoreboard graph: the top ten drawn as step lines on the sheet's grid.
   // Replaces core's ECharts graph so every stroke and label comes from the

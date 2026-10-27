@@ -2,7 +2,7 @@
 
 {% block content %}
   {% set code = "401" %}
-  {% set heading = error or _('Unauthorized') %}
-  {% set detail = _('You need a permit to view this sheet. Log in and try again.') %}
+  {% set heading = error or _('Credentials required') %}
+  {% set detail = _('This room needs a crew badge. Check in and try again.') %}
   {% include "components/error_sheet.html" %}
 {% endblock %}

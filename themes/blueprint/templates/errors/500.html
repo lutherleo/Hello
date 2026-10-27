@@ -2,7 +2,7 @@
 
 {% block content %}
   {% set code = "500" %}
-  {% set heading = error or _('Internal server error') %}
-  {% set detail = _('Something broke on our side. The organizers have been notified by the logs.') %}
+  {% set heading = error or _('Something went sideways') %}
+  {% set detail = _('The job hit a snag on our side. The organizers can see it in the logs.') %}
   {% include "components/error_sheet.html" %}
 {% endblock %}

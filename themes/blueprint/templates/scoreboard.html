@@ -5,10 +5,10 @@
     <div class="container">
       <div class="bp-sheet-meta bp-label">
         <span>{% trans %}Sheet{% endtrans %} S-02</span>
-        <span>{% trans %}Revision table{% endtrans %}</span>
+        <span>{% trans %}Crew standings{% endtrans %}</span>
       </div>
       <h1>
-        {% trans %}Scoreboard{% endtrans %}
+        {% trans %}The Take{% endtrans %}
       </h1>
     </div>
   </div>
@@ -19,8 +19,8 @@
              @bracket-change.window="bracket = $event.detail; update()"
              @bp-highlight.window="active = $event.detail">
       <header class="bp-graph__head">
-        <h2 class="h3 m-0">{% trans %}Top 10{% endtrans %}</h2>
-        <span class="bp-label">{% trans %}Points against time{% endtrans %}</span>
+        <h2 class="h3 m-0">{% trans %}Top 10 crews{% endtrans %}</h2>
+        <span class="bp-label">{% trans %}Take against time{% endtrans %}</span>
       </header>
 
       <div x-show="!loaded" class="bp-graph__loading">
@@ -29,7 +29,7 @@
       </div>
 
       <p class="bp-graph__none" x-show="loaded && !series.length" x-cloak>
-        {% trans %}No captures yet. The first solve draws the first line.{% endtrans %}
+        {% trans %}Nobody has cracked anything yet. The first flag draws the first line.{% endtrans %}
       </p>
 
       <div class="bp-graph__plot" x-ref="plot" x-show="loaded && series.length" x-cloak
@@ -73,7 +73,7 @@
             <tr>
               <th scope="col" class="text-center" style="width: 5.5rem">{% trans %}Place{% endtrans %}</th>
               <th scope="col" class="text-start ps-3">{{ get_mode_as_word(capitalize=True) }}</th>
-              <th scope="col" class="text-end pe-4">{% trans %}Score{% endtrans %}</th>
+              <th scope="col" class="text-end pe-4">{% trans %}Take{% endtrans %}</th>
             </tr>
             </thead>
 
@@ -99,8 +99,8 @@
 
       <div class="col-md-12" x-show="! standings.length">
         <div class="bp-empty">
-          <p class="h3 mb-2">{% trans %}Scoreboard is empty{% endtrans %}</p>
-          <p class="mb-0">{% trans %}The first capture will put a line on this sheet.{% endtrans %}</p>
+          <p class="h3 mb-2">{% trans %}No crews on the board yet{% endtrans %}</p>
+          <p class="mb-0">{% trans %}The first flag puts a crew on this sheet.{% endtrans %}</p>
         </div>
       </div>
     </div>

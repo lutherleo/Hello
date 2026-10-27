@@ -5,7 +5,7 @@
 <div class="container bp-error">
   <div class="bp-sheet-meta bp-label mb-3">
     <span>{% trans %}Sheet{% endtrans %} E-{{ code }}</span>
-    <span>{% trans %}Checker's note{% endtrans %}</span>
+    <span>{% trans %}Change of plan{% endtrans %}</span>
   </div>
   <p class="bp-error__code" aria-hidden="true">{{ code[:-1] }}<span>{{ code[-1] }}</span></p>
   <h1 class="h2">{{ heading }}</h1>
@@ -13,7 +13,7 @@
     <p class="bp-hero__lede">{{ detail }}</p>
   {% endif %}
   <div class="bp-hero__actions">
-    <a class="btn btn-primary" href="{{ url_for('challenges.listing') }}">{% trans %}Back to the challenges{% endtrans %}</a>
-    <a class="btn btn-secondary" href="{{ url_for('views.static_html', route='/') }}">{% trans %}Cover sheet{% endtrans %}</a>
+    <a class="btn btn-primary" href="{{ url_for('challenges.listing') }}">{% trans %}Back to the job{% endtrans %}</a>
+    <a class="btn btn-secondary" href="{{ url_for('views.static_html', route='/') }}">{% trans %}Briefing{% endtrans %}</a>
   </div>
 </div>
