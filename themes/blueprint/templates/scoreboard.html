@@ -72,8 +72,8 @@
             <input id="bp-crew-search" type="search" class="form-control" autocomplete="off" spellcheck="false"
                    placeholder="{% if teams_mode %}{% trans %}Find a crew…{% endtrans %}{% else %}{% trans %}Find a player…{% endtrans %}{% endif %}" x-model="crewQuery" @keydown.escape="crewQuery = ''">
           </div>
-          <a class="btn btn-secondary btn-sm" href="#bp-me" x-show="(standings || []).some(s => bpIsMe(s))" x-cloak
-             @click.prevent="document.getElementById('bp-me').scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })">{% if teams_mode %}{% trans %}Find my crew{% endtrans %}{% else %}{% trans %}Find me{% endtrans %}{% endif %}</a>
+          <a class="btn btn-secondary btn-sm" href="#bp-me" x-show="(standings || []).filter(i => activeBracket ? i.bracket_id == activeBracket : true).some(s => bpIsMe(s))" x-cloak
+             @click.prevent="crewQuery = ''; $nextTick(() => { const row = document.getElementById('bp-me'); if (row) row.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' }); })">{% if teams_mode %}{% trans %}Find my crew{% endtrans %}{% else %}{% trans %}Find me{% endtrans %}{% endif %}</a>
         </div>
         <div class="table-responsive">
           <table class="table table-striped align-middle">

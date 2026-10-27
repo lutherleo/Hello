@@ -35,7 +35,8 @@
       locked(c) { return c.type === 'hidden'; },
       role(category) { return window.bpCrewRole ? window.bpCrewRole(category) : ''; },
       list() { return Array.isArray(this.challenges) ? this.challenges : []; },
-      scored() { return this.list().filter(c => c.solved_by_me).reduce((sum, c) => sum + (c.value || 0), 0); },
+      score: null,
+      scored() { return this.score !== null ? this.score : this.list().filter(c => c.solved_by_me).reduce((sum, c) => sum + (c.value || 0), 0); },
       total() { return this.list().reduce((sum, c) => sum + (c.value || 0), 0); },
       solvedCount(list) { return list.filter(c => c.solved_by_me).length; },
       visible(list) { return list.filter(c => this.shown(c)); },
@@ -47,16 +48,30 @@
         try { this.hideSolved = localStorage.getItem('bp-hide-cracked') === '1'; } catch (e) {}
         this.$watch('hideSolved', v => { try { localStorage.setItem('bp-hide-cracked', v ? '1' : '0'); } catch (e) {} });
 
-        // In teams mode the haul is split evenly across the crew.
-        if (!window.init || window.init.userMode !== 'teams' || !window.init.teamId) return;
+        await this.refreshAccount(true);
+      },
+      async getJSON(path) {
         try {
-          const r = await fetch(window.init.urlRoot + '/api/v1/teams/me', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
-          const body = await r.json();
-          const members = body && body.data && body.data.members;
-          if (Array.isArray(members) && members.length) this.crewSize = members.length;
-        } catch (e) {}
+          const r = await fetch(window.init.urlRoot + path, { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+          return r.ok ? await r.json() : null;
+        } catch (e) { return null; }
+      },
+      // The haul is the server's score (awards and hint costs included), not just
+      // the sum of solved targets. In teams mode it is split across the crew as the
+      // scoreboard counts it (hidden and banned members excluded).
+      async refreshAccount(withCrew) {
+        if (!window.init || !window.init.userId) return;
+        const teams = window.init.userMode === 'teams';
+        if (teams && !window.init.teamId) return;
+        const me = await this.getJSON(teams ? '/api/v1/teams/me' : '/api/v1/users/me');
+        if (me && me.data && typeof me.data.score === 'number') this.score = me.data.score;
+        if (!teams || !withCrew) return;
+        const board = await this.getJSON('/api/v1/scoreboard');
+        const entry = board && Array.isArray(board.data) && board.data.find(s => Number(s.account_id) === Number(window.init.teamId));
+        const members = entry && Array.isArray(entry.members) && entry.members.length ? entry.members : (me && me.data && me.data.members);
+        if (Array.isArray(members) && members.length) this.crewSize = members.length;
       }
-    }" @keydown.window="focusSearch($event)">
+    }" @keydown.window="focusSearch($event)" @load-challenges.window="refreshAccount(false)">
 
       <div class="jumbotron">
         <div class="container">
@@ -152,6 +167,13 @@
                      placeholder="{% trans %}Find a target by name, specialty or tag…{% endtrans %}" spellcheck="false" enterkeyhint="search"
                      x-model="query" @keydown.escape="query = ''; $el.blur()">
               <kbd class="bp-search__key" x-show="!query" aria-hidden="true">/</kbd>
+            </div>
+          </template>
+
+          <template x-if="list().length > 0 && !query.trim() && hideSolved && !list().some(c => shown(c))">
+            <div class="bp-empty mt-4" role="status">
+              <p class="h3 mb-2">{% trans %}Every target on the board is cracked.{% endtrans %}</p>
+              <p class="mb-0">{% trans %}New targets may still go up.{% endtrans %} <button type="button" class="btn btn-link p-0 align-baseline" @click="hideSolved = false">{% trans %}Show cracked targets{% endtrans %}</button></p>
             </div>
           </template>
 

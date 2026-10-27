@@ -2611,12 +2611,12 @@ html[data-bs-theme="light"] [class*="col-"]:has(> p > .award-icon) > p {
 }
 
 /* A correct flag gets the checker's stamp in the challenge window too. */
-.modal .alert-success {
+#challenge-window .alert-success {
   position: relative;
   overflow: visible;
 }
 
-.modal .alert-success::before {
+#challenge-window .alert-success::before {
   content: "Cracked";
   position: absolute;
   top: -0.9rem;

@@ -454,8 +454,12 @@ class Handler(SimpleHTTPRequestHandler):
             else:
                 data = [{"name": "First blood", "value": 50, "date": "2026-10-26T12:00:00+00:00", "category": "Bonus"}]
             return self.send_json({"success": True, "data": data, "meta": {"count": len(data)}})
-        if path == "/api/v1/teams/me":
-            return self.send_json({"success": True, "data": {"id": 3, "name": "Segfault Society",
+        if path in ("/api/v1/teams/me", "/api/v1/users/me"):
+            # Score as CTFd reports it: solves plus awards (a 50-point bonus here).
+            # members lists every member, including one hidden from the scoreboard.
+            score = sum(c["value"] for c in CHALLENGES if c["solved_by_me"]) + 50
+            return self.send_json({"success": True, "data": {"id": 3 if path.startswith("/api/v1/teams") else 7,
+                                                              "name": "0xDEADBEEF", "score": score,
                                                               "members": [7, 8, 9, 10]}})
         if path.startswith("/api/v1/brackets"):
             return self.send_json({"success": True, "data": [{"id": 1, "name": "Student"}, {"id": 2, "name": "Open"}]})
