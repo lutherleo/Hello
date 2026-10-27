@@ -451,10 +451,13 @@
         pinned: null,
         bracket: null,
         loaded: false,
+        sealed: false,
         width: 1000,
 
         async update() {
           var data = await window.CTFd.pages.scoreboard.getScoreboardDetail(10, this.bracket);
+          // No data at all (not an empty object) means the API refused: scores are hidden.
+          this.sealed = data === undefined || data === null;
           this.series = buildSeries(data || {});
           this.loaded = true;
           var self = this;

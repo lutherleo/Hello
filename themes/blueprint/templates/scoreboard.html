@@ -17,7 +17,7 @@
   <div class="container">
     {% include "components/errors.html" %}
 
-    <section id="score-graph" class="bp-graph" x-data="BlueprintGraph"
+    <section id="score-graph" class="bp-graph" x-data="BlueprintGraph" x-show="!sealed && !(loaded && !series.length)"
              @bracket-change.window="bracket = $event.detail; update()"
              @bp-highlight.window="active = $event.detail">
       <header class="bp-graph__head">
@@ -29,10 +29,6 @@
         <i class="fas fa-circle-notch fa-spin fa-2x fa-fw spinner" aria-hidden="true"></i>
         <span class="visually-hidden">{% trans %}Loading graph…{% endtrans %}</span>
       </div>
-
-      <p class="bp-graph__none" x-show="loaded && !series.length" x-cloak>
-        {% trans %}Nobody has cracked anything yet. The first flag draws the first line.{% endtrans %}
-      </p>
 
       <div class="bp-graph__plot" x-ref="plot" x-show="loaded && series.length" x-cloak
            role="img" :aria-label="summary()" x-html="svg()"></div>
@@ -57,18 +53,18 @@
     </section>
 
     <div id="scoreboard" class="row" x-data="ScoreboardList">
-      <template x-if="brackets.length && standings.length">
+      <template x-if="(brackets || []).length && (standings || []).length">
         <div class="col-md-12 py-3">
           <nav class="nav nav-pills nav-fill" aria-label="{% trans %}Brackets{% endtrans %}">
             <button :class="{'nav-link': true, 'active': !activeBracket}" @click="activeBracket=null">{% trans %}All{% endtrans %}</button>
-            <template x-for="bracket in brackets">
+            <template x-for="bracket in (brackets || [])">
               <button :class="{'nav-link': true, 'active': activeBracket == bracket.id}" x-text="bracket.name" @click="activeBracket=bracket.id"></button>
             </template>
           </nav>
         </div>
       </template>
 
-      <div class="col-md-12" x-show="standings.length" x-data="{ crewQuery: '' }">
+      <div class="col-md-12" x-show="(standings || []).length" x-data="{ crewQuery: '' }">
         <div class="bp-ledger-tools">
           <div class="bp-search bp-search--inline" role="search">
             <label for="bp-crew-search" class="visually-hidden">{% if teams_mode %}{% trans %}Find a crew{% endtrans %}{% else %}{% trans %}Find a player{% endtrans %}{% endif %}</label>
@@ -76,7 +72,7 @@
             <input id="bp-crew-search" type="search" class="form-control" autocomplete="off" spellcheck="false"
                    placeholder="{% if teams_mode %}{% trans %}Find a crew…{% endtrans %}{% else %}{% trans %}Find a player…{% endtrans %}{% endif %}" x-model="crewQuery" @keydown.escape="crewQuery = ''">
           </div>
-          <a class="btn btn-secondary btn-sm" href="#bp-me" x-show="standings.some(s => bpIsMe(s))" x-cloak
+          <a class="btn btn-secondary btn-sm" href="#bp-me" x-show="(standings || []).some(s => bpIsMe(s))" x-cloak
              @click.prevent="document.getElementById('bp-me').scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' })">{% if teams_mode %}{% trans %}Find my crew{% endtrans %}{% else %}{% trans %}Find me{% endtrans %}{% endif %}</a>
         </div>
         <div class="table-responsive">
@@ -93,7 +89,7 @@
             </thead>
 
             <tbody>
-              <template x-for="(standing, index) in standings.filter(i => activeBracket ? i.bracket_id==activeBracket : true)">
+              <template x-for="(standing, index) in (standings || []).filter(i => activeBracket ? i.bracket_id==activeBracket : true)">
                 <tr x-show="!crewQuery.trim() || String(standing.name).toLowerCase().includes(crewQuery.trim().toLowerCase())"
                     @mouseenter="index < 10 && $dispatch('bp-highlight', index + 1)" @mouseleave="$dispatch('bp-highlight', null)"
                     :class="{'bp-row--me': bpIsMe(standing)}" :id="bpIsMe(standing) ? 'bp-me' : null">
@@ -125,7 +121,14 @@
         </div>
       </div>
 
-      <div class="col-md-12" x-show="! standings.length">
+      <div class="col-md-12" x-show="!Array.isArray(standings)" x-cloak>
+        <div class="bp-empty">
+          <p class="h3 mb-2">{% trans %}The ledger is sealed{% endtrans %}</p>
+          <p class="mb-0">{% trans %}Balances are hidden right now. They will be posted when the organizers open the books.{% endtrans %}</p>
+        </div>
+      </div>
+
+      <div class="col-md-12" x-show="Array.isArray(standings) && !standings.length">
         <div class="bp-empty">
           <p class="h3 mb-2">{% trans %}The ledger is empty{% endtrans %}</p>
           <p class="mb-0">{% trans %}The first cracked target writes the first entry.{% endtrans %}</p>

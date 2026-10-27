@@ -1,6 +1,6 @@
 // Screenshot the preview server's pages at several widths, in both prints.
 // Needs the preview servers: 8765 (logged in), 8766 --anon, 8767 --empty, 8768 --ended,
-// 8769 --api-error, 8770 --users, 8771 --stress.
+// 8769 --api-error, 8770 --users, 8771 --stress, 8772 --hidden-scores.
 // node dev/screenshots.js <outdir> [only-substring]
 const { chromium } = require("playwright");
 const path = require("path");
@@ -19,10 +19,15 @@ const shots = [
   { name: "register", url: "http://127.0.0.1:8766/register" },
   { name: "404", url: "http://127.0.0.1:8765/nope" },
   { name: "teams", url: "http://127.0.0.1:8765/teams" },
+  { name: "enroll", url: "http://127.0.0.1:8765/team/enroll" },
+  { name: "team-join", url: "http://127.0.0.1:8765/teams/join" },
+  { name: "team-new", url: "http://127.0.0.1:8765/teams/new" },
+  { name: "team-invite", url: "http://127.0.0.1:8765/teams/invite" },
   { name: "edge-ended", url: "http://127.0.0.1:8768/challenges", wait: ".bp-part" },
   { name: "edge-apierror", url: "http://127.0.0.1:8769/challenges", wait: ".bp-empty" },
   { name: "edge-users-board", url: "http://127.0.0.1:8770/challenges", wait: ".bp-part" },
   { name: "edge-users-ledger", url: "http://127.0.0.1:8770/scoreboard", wait: ".bp-graph__plot svg" },
+  { name: "edge-hidden-scores", url: "http://127.0.0.1:8772/scoreboard", wait: ".bp-empty" },
   { name: "edge-stress-board", url: "http://127.0.0.1:8771/challenges", wait: ".bp-part" },
   { name: "edge-stress-ledger", url: "http://127.0.0.1:8771/scoreboard", wait: ".bp-graph__plot svg" },
   { name: "users", url: "http://127.0.0.1:8765/users" },
