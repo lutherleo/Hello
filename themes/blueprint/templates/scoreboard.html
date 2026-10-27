@@ -1,14 +1,15 @@
 {% extends "base.html" %}
+{% from "macros/coin.html" import coin %}
 
 {% block content %}
   <div class="jumbotron">
     <div class="container">
       <div class="bp-sheet-meta bp-label">
         <span>{% trans %}Sheet{% endtrans %} S-02</span>
-        <span>{% trans %}Crew standings{% endtrans %}</span>
+        <span>{% trans %}Public ledger{% endtrans %} &middot; {% trans %}crew balances in{% endtrans %} {{ coin('name') }}</span>
       </div>
       <h1>
-        {% trans %}The Take{% endtrans %}
+        {% trans %}The Ledger{% endtrans %}
       </h1>
     </div>
   </div>
@@ -20,7 +21,7 @@
              @bp-highlight.window="active = $event.detail">
       <header class="bp-graph__head">
         <h2 class="h3 m-0">{% trans %}Top 10 crews{% endtrans %}</h2>
-        <span class="bp-label">{% trans %}Take against time{% endtrans %}</span>
+        <span class="bp-label">{% trans %}Balance against time{% endtrans %}</span>
       </header>
 
       <div x-show="!loaded" class="bp-graph__loading">
@@ -47,7 +48,7 @@
               <span class="bp-graph__swatch" aria-hidden="true"></span>
               <span class="bp-graph__rank" x-text="String(s.rank).padStart(2, '0')"></span>
               <span class="bp-graph__name" x-text="s.name"></span>
-              <span class="bp-graph__score" x-text="s.score"></span>
+              <span class="bp-graph__score">{{ coin('symbol') }}<span x-text="Number(s.score).toLocaleString()"></span></span>
             </button>
           </li>
         </template>
@@ -73,7 +74,10 @@
             <tr>
               <th scope="col" class="text-center" style="width: 5.5rem">{% trans %}Place{% endtrans %}</th>
               <th scope="col" class="text-start ps-3">{{ get_mode_as_word(capitalize=True) }}</th>
-              <th scope="col" class="text-end pe-4">{% trans %}Take{% endtrans %}</th>
+              <th scope="col" class="text-end">{% trans %}Balance{% endtrans %}</th>
+              {% if Configs.user_mode == 'teams' %}
+              <th scope="col" class="text-end pe-4">{% trans %}Cut per member{% endtrans %}</th>
+              {% endif %}
             </tr>
             </thead>
 
@@ -88,8 +92,18 @@
                     <template x-if="standing.bracket_name">
                       <span class="badge bg-secondary ms-2" x-text="standing.bracket_name"></span>
                     </template>
+                    <span class="bp-wallet" x-text="window.bpWallet ? window.bpWallet(standing.account_id + ':' + standing.name) : ''"></span>
                   </td>
-                  <td class="text-end pe-4 bp-score" x-text="standing.score"></td>
+                  <td class="text-end bp-score">{{ coin('symbol') }}<span x-text="Number(standing.score).toLocaleString()"></span></td>
+                  {% if Configs.user_mode == 'teams' %}
+                  <td class="text-end pe-4 bp-share">
+                    <template x-if="standing.members && standing.members.length">
+                      <span>{{ coin('symbol') }}<span x-text="(standing.score / standing.members.length).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })"></span>
+                        <small x-text="'&times;' + standing.members.length"></small></span>
+                    </template>
+                    <template x-if="!standing.members || !standing.members.length"><span>&mdash;</span></template>
+                  </td>
+                  {% endif %}
                 </tr>
               </template>
             </tbody>
@@ -99,8 +113,8 @@
 
       <div class="col-md-12" x-show="! standings.length">
         <div class="bp-empty">
-          <p class="h3 mb-2">{% trans %}No crews on the board yet{% endtrans %}</p>
-          <p class="mb-0">{% trans %}The first flag puts a crew on this sheet.{% endtrans %}</p>
+          <p class="h3 mb-2">{% trans %}The ledger is empty{% endtrans %}</p>
+          <p class="mb-0">{% trans %}The first cracked target writes the first entry.{% endtrans %}</p>
         </div>
       </div>
     </div>

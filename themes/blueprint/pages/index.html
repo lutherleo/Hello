@@ -4,7 +4,8 @@
   Paste this into Admin Panel -> Pages -> "index" (format: HTML). Everything in
   [brackets] is a placeholder for the organizers to fill in. The countdown
   reads the start and end times set in Admin Panel -> Config -> Start/End
-  Time, so it needs no editing.
+  Time, so it needs no editing. Ħ / Hashbar is the theme's default in-game
+  coin; if you rename it in theme_settings.currency, rename it here too.
 -->
 <section class="bp-hero">
   <div class="bp-hero__grid">
@@ -12,9 +13,9 @@
       <p class="bp-label">Job no. CSAW-26 &middot; Sheet S-00 &middot; Briefing</p>
       <h1 class="bp-hero__title">CSAW<br>CTF <em>&rsquo;26</em></h1>
       <p class="bp-hero__lede">
-        One target. Forty-eight hours. A vault full of flags that nobody is
-        supposed to get into. The OSIRIS Lab at NYU Tandon drew up the plans;
-        you bring the crew.
+        One exchange. One cold-storage vault full of Hashbar. Forty-eight hours
+        to crack it. The OSIRIS Lab at NYU Tandon drew up the plans; you bring
+        the crew and split the haul.
       </p>
       <div class="bp-hero__actions">
         <a class="btn btn-primary btn-lg" href="/challenges">See the job</a>
@@ -26,7 +27,7 @@
       <span class="bp-confidential" aria-hidden="true">Crew eyes only</span>
       <svg class="bp-hero__drawing bp-plan" viewBox="0 0 560 450" role="img"
            aria-labelledby="bp-plan-title" fill="none" stroke="currentColor" stroke-width="1.4">
-        <title id="bp-plan-title">Floor plan of the target with the crew's route marked in red: in through the service door, along the vent, down the elevator shaft and into the vault</title>
+        <title id="bp-plan-title">Floor plan of the exchange with the crew's route marked in red: in through the service door, along the vent, down the elevator shaft and into cold storage</title>
         <defs>
           <marker id="bp-route-arrow" viewBox="0 0 10 10" refX="6" refY="5" markerWidth="7" markerHeight="7" orient="auto">
             <path class="bp-red-fill" d="M0 0 10 5 0 10z" stroke="none"/>
@@ -43,15 +44,15 @@
         <!-- Main entrance: double doors -->
         <path stroke-width=".9" d="M206 400l0 24M254 400l0 24M206 424A24 24 0 0 0 230 400M254 424A24 24 0 0 1 230 400" opacity=".8"/>
 
-        <!-- Security room -->
+        <!-- Security operations centre: a wall of monitors and a desk -->
         <path stroke-width="2" d="M172 46V140M46 140H112M144 140H172"/>
         <g stroke-width="1">
           <rect x="58" y="58" width="96" height="16"/>
           <path d="M70 58v16M82 58v16M94 58v16M106 58v16M118 58v16M130 58v16M142 58v16"/>
-          <rect x="92" y="94" width="34" height="20" rx="2"/>
+          <rect x="80" y="94" width="58" height="16" rx="2"/>
         </g>
 
-        <!-- Vent duct (hidden): security ceiling to the elevator core -->
+        <!-- Vent duct (hidden): SOC ceiling to the elevator core -->
         <path stroke-dasharray="7 4" stroke-width=".9" opacity=".8" d="M172 82H402M172 94H402"/>
 
         <!-- Elevator and stair core -->
@@ -63,32 +64,36 @@
           <path d="M486 60v62" opacity=".6"/>
         </g>
 
-        <!-- Cashier cage -->
+        <!-- Hot wallet room: signing terminals behind a counter -->
         <path stroke-width="2" d="M402 172H514M402 172V222M402 254V296H514"/>
         <g stroke-width="1">
           <path d="M414 186h88M414 186v96"/>
           <rect x="420" y="198" width="22" height="14"/>
           <rect x="420" y="226" width="22" height="14"/>
           <rect x="420" y="254" width="22" height="14"/>
+          <path d="M426 205h10M426 233h10M426 261h10" opacity=".7"/>
         </g>
 
-        <!-- Vault room: reinforced walls, round door -->
+        <!-- Cold storage: reinforced, air-gapped, round door -->
         <path stroke-width="2" d="M382 326H514M382 326V344M382 378V394"/>
         <rect x="404" y="336" width="100" height="50" fill="url(#bp-plan-hatch)" stroke-width="1"/>
         <rect x="414" y="344" width="80" height="34" class="bp-fill" stroke-width="1.6"/>
         <circle cx="404" cy="361" r="13" class="bp-fill" stroke-width="1.6"/>
         <circle cx="404" cy="361" r="5" stroke-width="1"/>
 
-        <!-- Casino floor -->
+        <!-- Trading floor: two rows of desks with monitors -->
         <g stroke-width="1">
-          <path d="M70 196a22 22 0 0 0 44 0zM134 196a22 22 0 0 0 44 0zM198 196a22 22 0 0 0 44 0z"/>
-          <path d="M78 206h28M142 206h28M206 206h28" opacity=".6"/>
-          <circle cx="96" cy="282" r="18"/><circle cx="96" cy="282" r="9"/>
-          <circle cx="164" cy="282" r="18"/><circle cx="164" cy="282" r="9"/>
-          <rect x="276" y="170" width="70" height="38" rx="14"/>
-          <path d="M311 170v38" opacity=".6"/>
-          <path d="M262 258h96v12h-96zM262 290h96v12h-96zM274 258v12M286 258v12M298 258v12M310 258v12M322 258v12M334 258v12M346 258v12M274 290v12M286 290v12M298 290v12M310 290v12M322 290v12M334 290v12M346 290v12"/>
-          <path d="M90 352h96" stroke-dasharray="2 4" opacity=".7"/>
+          <rect x="66" y="172" width="168" height="14"/>
+          <rect x="66" y="222" width="168" height="14"/>
+          <path d="M78 172v-6h20v6M112 172v-6h20v6M146 172v-6h20v6M180 172v-6h20v6M78 236v6h20v-6M112 236v6h20v-6M146 236v6h20v-6M180 236v6h20v-6"/>
+          <path d="M78 192h20M112 192h20M146 192h20M180 192h20M78 216h20M112 216h20M146 216h20M180 216h20" opacity=".6"/>
+        </g>
+
+        <!-- Server hall: three rows of racks -->
+        <g stroke-width="1">
+          <path d="M262 226h96v12h-96zM262 258h96v12h-96zM262 290h96v12h-96z"/>
+          <path d="M274 226v12M286 226v12M298 226v12M310 226v12M322 226v12M334 226v12M346 226v12M274 258v12M286 258v12M298 258v12M310 258v12M322 258v12M334 258v12M346 258v12M274 290v12M286 290v12M298 290v12M310 290v12M322 290v12M334 290v12M346 290v12"/>
+          <path d="M258 214h104v96H258z" stroke-dasharray="3 3" opacity=".6"/>
         </g>
 
         <!-- Cameras -->
@@ -103,12 +108,13 @@
 
         <!-- Room labels -->
         <g class="bp-plan__label" stroke="none">
-          <text x="58" y="132">SECURITY</text>
+          <text x="58" y="132">SOC</text>
           <text x="414" y="124">ELEV.</text>
           <text x="466" y="128">STAIR</text>
-          <text x="456" y="282">CAGE</text>
-          <text x="420" y="320">VAULT</text>
-          <text x="70" y="244">CASINO FLOOR</text>
+          <text x="420" y="288">HOT WALLET</text>
+          <text x="404" y="320">COLD STORAGE</text>
+          <text x="66" y="264">TRADING FLOOR</text>
+          <text x="262" y="208">SERVER HALL</text>
           <text x="230" y="444" text-anchor="middle">MAIN ENTRANCE</text>
           <text x="256" y="32" text-anchor="end">SERVICE</text>
           <text x="250" y="76">VENT</text>
@@ -116,26 +122,27 @@
 
         <!-- Coffee ring left on the plan -->
         <g class="bp-stain">
-          <circle cx="150" cy="350" r="34" stroke-width="5"/>
-          <circle cx="152" cy="352" r="30" stroke-width="1.2"/>
+          <circle cx="150" cy="340" r="34" stroke-width="5"/>
+          <circle cx="152" cy="342" r="30" stroke-width="1.2"/>
         </g>
 
-        <!-- Redline: the route, the guards, the take -->
+        <!-- Redline: the route, the guards, the keys -->
         <path class="bp-red bp-plan__route" d="M280 6V88H436V150H392V348H384" marker-end="url(#bp-route-arrow)"/>
         <g class="bp-red" stroke-width="1.6">
           <circle cx="300" cy="18" r="11"/>
           <circle cx="350" cy="106" r="11"/>
-          <circle cx="372" cy="240" r="11"/>
+          <circle cx="372" cy="200" r="11"/>
           <ellipse cx="448" cy="361" rx="78" ry="40" transform="rotate(-4 448 361)"/>
           <path d="M214 352l32 32M246 352l-32 32" stroke-width="2.4"/>
         </g>
         <g class="bp-marker-text" stroke="none">
           <text x="300" y="24" text-anchor="middle">1</text>
           <text x="350" y="112" text-anchor="middle">2</text>
-          <text x="372" y="246" text-anchor="middle">3</text>
-          <text x="454" y="369" text-anchor="middle" class="bp-marker-text--big">$$$</text>
+          <text x="372" y="206" text-anchor="middle">3</text>
+          <text x="454" y="368" text-anchor="middle" class="bp-marker-text--big">keys</text>
           <text x="196" y="342" transform="rotate(-6 196 342)">not this way</text>
-          <text x="70" y="176" transform="rotate(-4 70 176)" class="bp-marker-text--small">loop the cams</text>
+          <text x="70" y="160" transform="rotate(-4 70 160)" class="bp-marker-text--small">loop the cams</text>
+          <text x="512" y="430" text-anchor="end" transform="rotate(-3 512 430)" class="bp-marker-text--small">air-gapped. bring a laptop</text>
         </g>
         <g class="bp-red-fill" stroke="none">
           <circle cx="300" cy="372" r="6" opacity=".9"/>
@@ -166,8 +173,8 @@
     <dd>[up to 4]</dd>
   </div>
   <div>
-    <dt>Finals</dt>
-    <dd>[top student crews]</dd>
+    <dt>Payout</dt>
+    <dd><span class="bp-coin">&#294;</span>Hashbar, split evenly</dd>
   </div>
 </dl>
 
@@ -178,124 +185,124 @@
     <ol class="bp-steps">
       <li>
         <h3>Assemble the crew</h3>
-        <p>Register a team. Every specialist gets their own account.</p>
+        <p>Register a team. Every specialist gets their own account and their own cut.</p>
       </li>
       <li>
-        <h3>Case the joint</h3>
+        <h3>Case the exchange</h3>
         <p>Read the rules and the target briefs before the doors open.</p>
       </li>
       <li>
         <h3>Crack the systems</h3>
-        <p>Every challenge hides a flag. Submit it and the target is stamped cracked.</p>
+        <p>Every challenge hides a flag. Each flag you submit moves its Hashbar from cold storage to your crew.</p>
       </li>
       <li>
-        <h3>Get out clean</h3>
-        <p>Flags count only before the clock runs out. Biggest take wins.</p>
+        <h3>Split the haul</h3>
+        <p>The haul is divided evenly across the crew. When the clock runs out, the biggest balance on the ledger wins.</p>
       </li>
     </ol>
   </div>
   <svg class="bp-hero__drawing bp-detail" viewBox="0 0 520 440" role="img"
-           aria-labelledby="bp-vault-title" fill="none" stroke="currentColor" stroke-width="1.4">
-        <title id="bp-vault-title">Technical drawing of a round bank vault door, front and side elevation, with dimensions</title>
-        <defs>
-          <marker id="bp-vault-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9"
-                  orient="auto-start-reverse">
-            <path d="M0 1.5 10 5 0 8.5z" fill="currentColor" stroke="none"/>
-          </marker>
-        </defs>
+             aria-labelledby="bp-vault-title" fill="none" stroke="currentColor" stroke-width="1.4">
+          <title id="bp-vault-title">Technical drawing of the cold-storage vault door, front and side elevation, with dimensions</title>
+          <defs>
+            <marker id="bp-vault-arrow" viewBox="0 0 10 10" refX="10" refY="5" markerWidth="9" markerHeight="9"
+                    orient="auto-start-reverse">
+              <path d="M0 1.5 10 5 0 8.5z" fill="currentColor" stroke="none"/>
+            </marker>
+          </defs>
 
-        <!-- Centre lines -->
-        <path d="M22 220h476M200 44v352" stroke-dasharray="16 4 3 4" stroke-width=".8" opacity=".7"/>
+          <!-- Centre lines -->
+          <path d="M22 220h476M200 44v352" stroke-dasharray="16 4 3 4" stroke-width=".8" opacity=".7"/>
 
-        <!-- Front elevation: frame, seal gap, door body, inner panels -->
-        <circle cx="200" cy="220" r="160" stroke-width="2"/>
-        <circle cx="200" cy="220" r="144" stroke-width=".9"/>
-        <circle cx="200" cy="220" r="140" stroke-width="2"/>
-        <circle cx="200" cy="220" r="118"/>
-        <circle cx="200" cy="220" r="108" stroke-dasharray="6 4" stroke-width=".9" opacity=".75"/>
-        <g stroke-width="1"><circle cx="323.6" cy="186.9" r="2.6"/> <circle cx="290.5" cy="129.5" r="2.6"/> <circle cx="233.1" cy="96.4" r="2.6"/> <circle cx="166.9" cy="96.4" r="2.6"/> <circle cx="109.5" cy="129.5" r="2.6"/> <circle cx="76.4" cy="186.9" r="2.6"/> <circle cx="76.4" cy="253.1" r="2.6"/> <circle cx="109.5" cy="310.5" r="2.6"/> <circle cx="166.9" cy="343.6" r="2.6"/> <circle cx="233.1" cy="343.6" r="2.6"/> <circle cx="290.5" cy="310.5" r="2.6"/> <circle cx="323.6" cy="253.1" r="2.6"/></g>
+          <!-- Front elevation: frame, seal gap, door body, inner panels -->
+          <circle cx="200" cy="220" r="160" stroke-width="2"/>
+          <circle cx="200" cy="220" r="144" stroke-width=".9"/>
+          <circle cx="200" cy="220" r="140" stroke-width="2"/>
+          <circle cx="200" cy="220" r="118"/>
+          <circle cx="200" cy="220" r="108" stroke-dasharray="6 4" stroke-width=".9" opacity=".75"/>
+          <g stroke-width="1"><circle cx="323.6" cy="186.9" r="2.6"/> <circle cx="290.5" cy="129.5" r="2.6"/> <circle cx="233.1" cy="96.4" r="2.6"/> <circle cx="166.9" cy="96.4" r="2.6"/> <circle cx="109.5" cy="129.5" r="2.6"/> <circle cx="76.4" cy="186.9" r="2.6"/> <circle cx="76.4" cy="253.1" r="2.6"/> <circle cx="109.5" cy="310.5" r="2.6"/> <circle cx="166.9" cy="343.6" r="2.6"/> <circle cx="233.1" cy="343.6" r="2.6"/> <circle cx="290.5" cy="310.5" r="2.6"/> <circle cx="323.6" cy="253.1" r="2.6"/></g>
 
-        <!-- Locking bolts, thrown into the frame (none on the hinge side) -->
-        <g class="bp-fill" stroke-width="1.2">
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-0 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-22.5 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-45 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-67.5 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-90 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-112.5 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-135 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-225 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-247.5 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-270 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-292.5 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-315 200 220)"/>
-          <rect x="332" y="214" width="26" height="12" transform="rotate(-337.5 200 220)"/>
-        </g>
+          <!-- Locking bolts, thrown into the frame (none on the hinge side) -->
+          <g class="bp-fill" stroke-width="1.2">
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-0 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-22.5 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-45 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-67.5 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-90 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-112.5 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-135 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-225 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-247.5 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-270 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-292.5 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-315 200 220)"/>
+            <rect x="332" y="214" width="26" height="12" transform="rotate(-337.5 200 220)"/>
+          </g>
 
-        <!-- Hinge: barrels on the frame, arms onto the door -->
-        <g class="bp-fill">
-          <rect x="38" y="130" width="54" height="26"/>
-          <rect x="38" y="284" width="54" height="26"/>
-          <rect x="14" y="118" width="24" height="50" rx="3"/>
-          <rect x="14" y="272" width="24" height="50" rx="3"/>
-        </g>
-        <path d="M14 134h24M14 152h24M14 288h24M14 306h24" stroke-width=".8"/>
-        <g stroke-width="1"><circle cx="78" cy="143" r="3"/><circle cx="78" cy="297" r="3"/></g>
+          <!-- Hinge: barrels on the frame, arms onto the door -->
+          <g class="bp-fill">
+            <rect x="38" y="130" width="54" height="26"/>
+            <rect x="38" y="284" width="54" height="26"/>
+            <rect x="14" y="118" width="24" height="50" rx="3"/>
+            <rect x="14" y="272" width="24" height="50" rx="3"/>
+          </g>
+          <path d="M14 134h24M14 152h24M14 288h24M14 306h24" stroke-width=".8"/>
+          <g stroke-width="1"><circle cx="78" cy="143" r="3"/><circle cx="78" cy="297" r="3"/></g>
 
-        <!-- Three-spoke handle -->
-        <g class="bp-fill">
-          <rect x="238" y="216" width="56" height="8" transform="rotate(-30 200 220)"/>
-          <rect x="238" y="216" width="56" height="8" transform="rotate(-150 200 220)"/>
-          <rect x="238" y="216" width="56" height="8" transform="rotate(-270 200 220)"/>
-          <circle cx="288.3" cy="169" r="9"/>
-          <circle cx="111.7" cy="169" r="9"/>
-          <circle cx="200" cy="322" r="9"/>
-          <circle cx="200" cy="220" r="40"/>
-        </g>
+          <!-- Three-spoke handle -->
+          <g class="bp-fill">
+            <rect x="238" y="216" width="56" height="8" transform="rotate(-30 200 220)"/>
+            <rect x="238" y="216" width="56" height="8" transform="rotate(-150 200 220)"/>
+            <rect x="238" y="216" width="56" height="8" transform="rotate(-270 200 220)"/>
+            <circle cx="288.3" cy="169" r="9"/>
+            <circle cx="111.7" cy="169" r="9"/>
+            <circle cx="200" cy="322" r="9"/>
+            <circle cx="200" cy="220" r="40"/>
+          </g>
 
-        <!-- Combination dial -->
-        <path d="M230 220L236 220M232.8 216.6L235.8 216.2M232.3 213.1L235.2 212.5M231.4 209.8L234.2 208.9M230.1 206.6L232.9 205.4M226 205L231.2 202M226.7 200.6L229.1 198.8M224.5 197.9L226.8 195.9M222.1 195.5L224.1 193.2M219.4 193.3L221.2 190.9M215 194L218 188.8M213.4 189.9L214.6 187.1M210.2 188.6L211.1 185.8M206.9 187.7L207.5 184.8M203.4 187.2L203.8 184.2M200 190L200 184M196.6 187.2L196.2 184.2M193.1 187.7L192.5 184.8M189.8 188.6L188.9 185.8M186.6 189.9L185.4 187.1M185 194L182 188.8M180.6 193.3L178.8 190.9M177.9 195.5L175.9 193.2M175.5 197.9L173.2 195.9M173.3 200.6L170.9 198.8M174 205L168.8 202M169.9 206.6L167.1 205.4M168.6 209.8L165.8 208.9M167.7 213.1L164.8 212.5M167.2 216.6L164.2 216.2M170 220L164 220M167.2 223.4L164.2 223.8M167.7 226.9L164.8 227.5M168.6 230.2L165.8 231.1M169.9 233.4L167.1 234.6M174 235L168.8 238M173.3 239.4L170.9 241.2M175.5 242.1L173.2 244.1M177.9 244.5L175.9 246.8M180.6 246.7L178.8 249.1M185 246L182 251.2M186.6 250.1L185.4 252.9M189.8 251.4L188.9 254.2M193.1 252.3L192.5 255.2M196.6 252.8L196.2 255.8M200 250L200 256M203.4 252.8L203.8 255.8M206.9 252.3L207.5 255.2M210.2 251.4L211.1 254.2M213.4 250.1L214.6 252.9M215 246L218 251.2M219.4 246.7L221.2 249.1M222.1 244.5L224.1 246.8M224.5 242.1L226.8 244.1M226.7 239.4L229.1 241.2M226 235L231.2 238M230.1 233.4L232.9 234.6M231.4 230.2L234.2 231.1M232.3 226.9L235.2 227.5M232.8 223.4L235.8 223.8" stroke-width=".8"/>
-        <circle cx="200" cy="220" r="28"/>
-        <circle cx="200" cy="220" r="18" stroke-width="1"/>
-        <circle cx="200" cy="220" r="7"/>
-        <path class="bp-red-fill" stroke="none" d="M200 176l-4 -7h8z"/>
+          <!-- Combination dial -->
+          <path d="M230 220L236 220M232.8 216.6L235.8 216.2M232.3 213.1L235.2 212.5M231.4 209.8L234.2 208.9M230.1 206.6L232.9 205.4M226 205L231.2 202M226.7 200.6L229.1 198.8M224.5 197.9L226.8 195.9M222.1 195.5L224.1 193.2M219.4 193.3L221.2 190.9M215 194L218 188.8M213.4 189.9L214.6 187.1M210.2 188.6L211.1 185.8M206.9 187.7L207.5 184.8M203.4 187.2L203.8 184.2M200 190L200 184M196.6 187.2L196.2 184.2M193.1 187.7L192.5 184.8M189.8 188.6L188.9 185.8M186.6 189.9L185.4 187.1M185 194L182 188.8M180.6 193.3L178.8 190.9M177.9 195.5L175.9 193.2M175.5 197.9L173.2 195.9M173.3 200.6L170.9 198.8M174 205L168.8 202M169.9 206.6L167.1 205.4M168.6 209.8L165.8 208.9M167.7 213.1L164.8 212.5M167.2 216.6L164.2 216.2M170 220L164 220M167.2 223.4L164.2 223.8M167.7 226.9L164.8 227.5M168.6 230.2L165.8 231.1M169.9 233.4L167.1 234.6M174 235L168.8 238M173.3 239.4L170.9 241.2M175.5 242.1L173.2 244.1M177.9 244.5L175.9 246.8M180.6 246.7L178.8 249.1M185 246L182 251.2M186.6 250.1L185.4 252.9M189.8 251.4L188.9 254.2M193.1 252.3L192.5 255.2M196.6 252.8L196.2 255.8M200 250L200 256M203.4 252.8L203.8 255.8M206.9 252.3L207.5 255.2M210.2 251.4L211.1 254.2M213.4 250.1L214.6 252.9M215 246L218 251.2M219.4 246.7L221.2 249.1M222.1 244.5L224.1 246.8M224.5 242.1L226.8 244.1M226.7 239.4L229.1 241.2M226 235L231.2 238M230.1 233.4L232.9 234.6M231.4 230.2L234.2 231.1M232.3 226.9L235.2 227.5M232.8 223.4L235.8 223.8" stroke-width=".8"/>
+          <circle cx="200" cy="220" r="28"/>
+          <circle cx="200" cy="220" r="18" stroke-width="1"/>
+          <circle cx="200" cy="220" r="7"/>
+          <path class="bp-red-fill" stroke="none" d="M200 176l-4 -7h8z"/>
 
-        <!-- Side elevation -->
-        <rect x="448" y="60" width="12" height="320"/>
-        <rect x="420" y="80" width="28" height="280" stroke-width="2"/>
-        <path d="M426 100v240M442 100v240" stroke-dasharray="6 4" stroke-width=".9" opacity=".75"/>
-        <g class="bp-fill"><rect x="406" y="206" width="14" height="28"/><circle cx="400" cy="118" r="7"/><circle cx="400" cy="322" r="7"/></g>
-        <path d="M406 220h-6M400 125v88M400 227v88" stroke-width="1.2"/>
-        <text x="440" y="398" text-anchor="middle" stroke="none">SIDE</text>
+          <!-- Side elevation -->
+          <rect x="448" y="60" width="12" height="320"/>
+          <rect x="420" y="80" width="28" height="280" stroke-width="2"/>
+          <path d="M426 100v240M442 100v240" stroke-dasharray="6 4" stroke-width=".9" opacity=".75"/>
+          <g class="bp-fill"><rect x="406" y="206" width="14" height="28"/><circle cx="400" cy="118" r="7"/><circle cx="400" cy="322" r="7"/></g>
+          <path d="M406 220h-6M400 125v88M400 227v88" stroke-width="1.2"/>
+          <text x="440" y="398" text-anchor="middle" stroke="none">SIDE</text>
 
-        <!-- Thickness dimension -->
-        <path d="M420 76V42M448 76V42" stroke-width=".8"/>
-        <path d="M398 48h20M470 48h-20" stroke-width=".8" marker-end="url(#bp-vault-arrow)"/>
-        <path d="M418 48h32" stroke-width=".8"/>
-        <text x="434" y="38" text-anchor="middle" stroke="none">180</text>
+          <!-- Thickness dimension -->
+          <path d="M420 76V42M448 76V42" stroke-width=".8"/>
+          <path d="M398 48h20M470 48h-20" stroke-width=".8" marker-end="url(#bp-vault-arrow)"/>
+          <path d="M418 48h32" stroke-width=".8"/>
+          <text x="434" y="38" text-anchor="middle" stroke="none">180</text>
 
-        <!-- Door diameter dimension -->
-        <path d="M452 80h48M452 360h48" stroke-width=".8"/>
-        <path d="M492 82v276" stroke-width=".8" marker-start="url(#bp-vault-arrow)" marker-end="url(#bp-vault-arrow)"/>
-        <text x="500" y="220" stroke="none" transform="rotate(90 500 220)" text-anchor="middle">&#216; 2400 DOOR</text>
+          <!-- Door diameter dimension -->
+          <path d="M452 80h48M452 360h48" stroke-width=".8"/>
+          <path d="M492 82v276" stroke-width=".8" marker-start="url(#bp-vault-arrow)" marker-end="url(#bp-vault-arrow)"/>
+          <text x="500" y="220" stroke="none" transform="rotate(90 500 220)" text-anchor="middle">&#216; 2400 DOOR</text>
 
-        <!-- Callouts -->
-        <path d="M262 36L302.1 117.9" stroke-width=".8" marker-end="url(#bp-vault-arrow)"/>
-        <text x="230" y="30" stroke="none">LOCKING BOLT &#215;13</text>
-        <path d="M26 104v12" stroke-width=".8" marker-end="url(#bp-vault-arrow)"/>
-        <text x="8" y="98" stroke="none">HINGE ASSY</text>
-        <text x="8" y="20" stroke="none" opacity=".8">DOOR WT. &#8776; 22,000 LB</text>
+          <!-- Callouts -->
+          <path d="M262 36L302.1 117.9" stroke-width=".8" marker-end="url(#bp-vault-arrow)"/>
+          <text x="230" y="30" stroke="none">LOCKING BOLT &#215;13</text>
+          <path d="M26 104v12" stroke-width=".8" marker-end="url(#bp-vault-arrow)"/>
+          <text x="8" y="98" stroke="none">HINGE ASSY</text>
+          <text x="8" y="20" stroke="none" opacity=".8">DOOR WT. &#8776; 22,000 LB</text>
 
-        <!-- Redline: revision cloud round the dial, delta and note -->
-        <path class="bp-red" stroke-width="1.6" d="M248 220A13 13 0 0 1 241.6 244A13 13 0 0 1 224 261.6A13 13 0 0 1 200 268A13 13 0 0 1 176 261.6A13 13 0 0 1 158.4 244A13 13 0 0 1 152 220A13 13 0 0 1 158.4 196A13 13 0 0 1 176 178.4A13 13 0 0 1 200 172A13 13 0 0 1 224 178.4A13 13 0 0 1 241.6 196A13 13 0 0 1 248 220z"/>
-        <path class="bp-red-fill" stroke="none" d="M241 167l12 20h-24z"/>
-        <text x="241" y="184" text-anchor="middle" stroke="none" fill="#fff" style="font-size:10px">26</text>
-        <path class="bp-red" d="M232.1 258.3L246 388" stroke-width=".9"/>
-        <text class="bp-red-text" x="236" y="400" stroke="none">REV 26: COMBINATION</text>
-        <text class="bp-red-text" x="236" y="414" stroke="none">NOT ON FILE</text>
+          <!-- Redline: revision cloud round the dial, delta and note -->
+          <path class="bp-red" stroke-width="1.6" d="M248 220A13 13 0 0 1 241.6 244A13 13 0 0 1 224 261.6A13 13 0 0 1 200 268A13 13 0 0 1 176 261.6A13 13 0 0 1 158.4 244A13 13 0 0 1 152 220A13 13 0 0 1 158.4 196A13 13 0 0 1 176 178.4A13 13 0 0 1 200 172A13 13 0 0 1 224 178.4A13 13 0 0 1 241.6 196A13 13 0 0 1 248 220z"/>
+          <path class="bp-red-fill" stroke="none" d="M241 167l12 20h-24z"/>
+          <text x="241" y="184" text-anchor="middle" stroke="none" fill="#fff" style="font-size:10px">26</text>
+          <path class="bp-red" d="M232.1 258.3L246 388" stroke-width=".9"/>
+          <text class="bp-red-text" x="236" y="400" stroke="none">REV 26: PRIVATE KEY</text>
+          <text class="bp-red-text" x="236" y="414" stroke="none">NOT ON FILE</text>
 
-        <text x="8" y="434" stroke="none" opacity=".8">DETAIL A &#8212; VAULT DOOR &#183; FRONT &amp; SIDE ELEV. &#183; SCALE 1:20</text>
-      </svg>
+          <text x="8" y="434" stroke="none" opacity=".8">DETAIL A &#8212; VAULT DOOR &#183; FRONT &amp; SIDE ELEV. &#183; SCALE 1:20</text>
+        </svg>
 </section>
 
 <section class="bp-crew">
@@ -317,6 +324,8 @@
     <li>Flags look like <code>csawctf{...}</code> unless a brief says otherwise.</li>
     <li>Hit the targets, not the house: no attacking the scoring server or other crews.</li>
     <li>No sharing flags or solutions until the job is over.</li>
+    <li>Hashbar is play money. It exists only on this scoreboard, cannot be bought, sold or withdrawn, and is not on any real blockchain.</li>
+    <li>Nobody running this event will ever ask for your wallet address, seed phrase, private keys or a payment. If someone does, it is a scam: report it.</li>
     <li>Questions go to [contact channel]. Admins never ask for your password.</li>
   </ol>
 </div>

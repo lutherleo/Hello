@@ -189,7 +189,8 @@ TEAMS = ["Segfault Society", "Null Pointer Club", "0xDEADBEEF", "Shell Shocked",
 def scoreboard():
     return [{"pos": i + 1, "account_id": i + 1, "account_url": f"/teams/{i + 1}", "account_type": "team",
              "oauth_id": None, "name": n, "score": 4200 - i * 290 - (i * i * 7), "bracket_id": None,
-             "bracket_name": "Student" if i % 3 == 0 else None, "members": []}
+             "bracket_name": "Student" if i % 3 == 0 else None,
+             "members": [{"id": i * 10 + m, "name": f"member{m}", "score": 0} for m in range(1 + (i % 4))]}
             for i, n in enumerate(TEAMS)]
 
 
@@ -295,6 +296,9 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"success": True, "data": [] if EMPTY else scoreboard()})
         if path.startswith("/api/v1/scoreboard/top/"):
             return self.send_json({"success": True, "data": {} if EMPTY else top10()})
+        if path == "/api/v1/teams/me":
+            return self.send_json({"success": True, "data": {"id": 3, "name": "Segfault Society",
+                                                              "members": [7, 8, 9, 10]}})
         if path.startswith("/api/v1/brackets"):
             return self.send_json({"success": True, "data": [{"id": 1, "name": "Student"}, {"id": 2, "name": "Open"}]})
         if path.startswith("/api/v1/"):

@@ -1511,11 +1511,9 @@ html[data-bs-theme="light"] .challenge-button.bp-part:focus-visible {
   color: var(--bp-redline);
 }
 
-.challenge-value::after {
-  content: " pts";
-  color: var(--bp-ink-muted);
-  font-size: 0.75rem;
-  letter-spacing: 0.1em;
+.challenge-value::before {
+  content: var(--bp-coin, "");
+  margin-right: 0.1em;
 }
 
 .challenge-tags,
@@ -2283,4 +2281,63 @@ html[data-bs-theme="light"] .bp-crew__grid li {
   .bp-section__rule {
     display: none;
   }
+}
+
+
+/* --- The coin -------------------------------------------------------------- */
+
+:root {
+  --bp-coin: "Ħ";
+}
+
+.bp-coin {
+  font-weight: 500;
+  margin-right: 0.08em;
+  color: var(--bp-redline);
+}
+
+.bp-gauge__value .bp-coin {
+  font-weight: 600;
+  margin-right: 0.04em;
+}
+
+.bp-cut {
+  margin: 0.85rem 0 0;
+  font-family: var(--bp-font-mono);
+  font-size: 0.875rem;
+  color: var(--bp-ink-muted);
+}
+
+.bp-cut strong {
+  font-family: var(--bp-font-display);
+  font-size: 1.375rem;
+  font-weight: 700;
+  color: var(--bp-ink);
+  margin: 0 0.25rem;
+}
+
+.bp-wallet {
+  display: block;
+  margin-top: 0.1rem;
+  font-family: var(--bp-font-mono);
+  font-size: 0.6875rem;
+  letter-spacing: 0.04em;
+  color: var(--bp-ink-faint);
+}
+
+.bp-share {
+  font-family: var(--bp-font-mono);
+  font-variant-numeric: tabular-nums;
+  color: var(--bp-ink-muted);
+  white-space: nowrap;
+}
+
+.bp-share small {
+  margin-left: 0.35rem;
+  font-size: 0.6875rem;
+  color: var(--bp-ink-faint);
+}
+
+.bp-score {
+  white-space: nowrap;
 }

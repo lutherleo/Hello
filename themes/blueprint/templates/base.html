@@ -2,7 +2,7 @@
 {%- set bp_sheets = {
   'views.static_html': ('S-00', 'Briefing'),
   'challenges.listing': ('S-01', 'The Job'),
-  'scoreboard.listing': ('S-02', 'The Take'),
+  'scoreboard.listing': ('S-02', 'The Ledger'),
   'users.listing': ('S-03', 'Users'),
   'users.public': ('S-03', 'User'),
   'users.private': ('S-03', 'Profile'),
@@ -16,14 +16,15 @@
   'auth.reset_password': ('S-07', 'Reset'),
 } -%}
 {%- set bp_sheet = bp_sheets.get(request.endpoint, ('S-99', 'Detail')) -%}
+{%- from "macros/coin.html" import coin -%}
 <!DOCTYPE html>
-<html lang="{{ get_locale() or 'en' }}" data-bs-theme="dark">
+<html lang="{{ get_locale() or 'en' }}" data-bs-theme="dark" style="--bp-coin: '{{ coin('symbol') | replace("'", "") | replace("\\", "") }}'">
 <head>
   <title>{{ title or Configs.ctf_name }}</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f3c74">
-  <meta name="description" content="{{ Configs.ctf_name }}: the job briefing, the targets and the take.">
+  <meta name="description" content="{{ Configs.ctf_name }}: the job briefing, the targets and the ledger.">
   <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
 
   {{ meta | safe }}
@@ -56,6 +57,7 @@
           'start': {{ Configs.start | tojson }},
           'end': {{ Configs.end | tojson }},
           'themeSettings': {{ Configs.theme_settings | tojson }},
+          'coin': {'name': {{ coin('name') | tojson }}, 'symbol': {{ coin('symbol') | tojson }}},
           'eventSounds': [
             "/themes/core/static/sounds/notification.webm",
             "/themes/core/static/sounds/notification.mp3",
@@ -113,7 +115,7 @@
       </div>
       <div>
         <dt>{% trans %}Currency{% endtrans %}</dt>
-        <dd>{% trans %}points{% endtrans %}</dd>
+        <dd>{{ coin('symbol') }} {{ coin('name') }}</dd>
       </div>
       <div>
         <dt>{% trans %}Print{% endtrans %}</dt>

@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros/coin.html" import coin %}
 
 {% block content %}
   <div
@@ -23,14 +24,26 @@
       total() { return this.challenges.reduce((sum, c) => sum + (c.value || 0), 0); },
       solvedCount(list) { return list.filter(c => c.solved_by_me).length; },
       visible(list) { return this.hideSolved ? list.filter(c => !c.solved_by_me) : list; },
-      percent() { const t = this.total(); return t ? Math.min(100, (this.scored() / t) * 100) : 0; }
+      percent() { const t = this.total(); return t ? Math.min(100, (this.scored() / t) * 100) : 0; },
+      crewSize: 1,
+      cut() { return (this.scored() / this.crewSize).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 }); },
+      async init() {
+        // In teams mode the haul is split evenly across the crew.
+        if (!window.init || window.init.userMode !== 'teams' || !window.init.teamId) return;
+        try {
+          const r = await fetch(window.init.urlRoot + '/api/v1/teams/me', { credentials: 'same-origin', headers: { Accept: 'application/json' } });
+          const body = await r.json();
+          const members = body && body.data && body.data.members;
+          if (Array.isArray(members) && members.length) this.crewSize = members.length;
+        } catch (e) {}
+      }
     }">
 
       <div class="jumbotron">
         <div class="container">
           <div class="bp-sheet-meta bp-label">
             <span>{% trans %}Sheet{% endtrans %} S-01</span>
-            <span>{% trans %}Target floor plan{% endtrans %}</span>
+            <span>{% trans %}Exchange floor plan{% endtrans %}</span>
             <span x-show="loaded" x-cloak><span x-text="getCategories().length"></span> {% trans %}specialties{% endtrans %} &middot; <span x-text="challenges.length"></span> {% trans %}targets{% endtrans %}</span>
           </div>
           <h1>{% trans %}The Job{% endtrans %}</h1>
@@ -64,19 +77,26 @@
           <template x-if="challenges.length > 0">
             <div class="bp-board-head">
               {% if authed() %}
-              <div class="bp-gauge" role="group" aria-label="{% trans %}Your take{% endtrans %}">
-                <p class="bp-label mb-1">{% trans %}Your crew's take{% endtrans %}</p>
+              <div class="bp-gauge" role="group" aria-label="{% trans %}Your crew's haul{% endtrans %}">
+                <p class="bp-label mb-1">{% trans %}Your crew's haul{% endtrans %}</p>
                 <div class="bp-gauge__figures">
-                  <span class="bp-gauge__value" x-text="scored()"></span>
-                  <span class="bp-gauge__of">/ <span x-text="total()"></span> {% trans %}pts in the vault{% endtrans %}
+                  <span class="bp-gauge__value"><span class="bp-coin">{{ coin('symbol') }}</span><span x-text="scored().toLocaleString()"></span></span>
+                  <span class="bp-gauge__of">/ {{ coin('symbol') }}<span x-text="total().toLocaleString()"></span> {% trans %}in cold storage{% endtrans %}
                     &middot; <span x-text="solvedCount(challenges)"></span>/<span x-text="challenges.length"></span> {% trans %}cracked{% endtrans %}</span>
                 </div>
                 <div class="bp-gauge__track">
                   <div class="bp-gauge__fill" :style="`width: ${percent()}%`" :data-empty="scored() === 0"></div>
                 </div>
                 <div class="bp-gauge__scale" aria-hidden="true">
-                  <span>0</span><span x-text="Math.round(percent()) + '%'"></span><span x-text="total()"></span>
+                  <span>0</span><span x-text="Math.round(percent()) + '%'"></span><span>{{ coin('symbol') }}<span x-text="total()"></span></span>
                 </div>
+                {% if Configs.user_mode == 'teams' %}
+                <p class="bp-cut" x-show="crewSize > 1" x-cloak>
+                  {% trans %}Your cut{% endtrans %}
+                  <strong>{{ coin('symbol') }}<span x-text="cut()"></span></strong>
+                  <span>&middot; {% trans %}split{% endtrans %} <span x-text="crewSize"></span> {% trans %}ways{% endtrans %}</span>
+                </p>
+                {% endif %}
               </div>
               {% else %}
               <div>
@@ -131,7 +151,7 @@
                       ]"
                       :value="c.id"
                       :disabled="locked(c)"
-                      :aria-label="`${partNo(ci, j)} ${c.name}, ${c.value} points${c.solved_by_me ? ', cracked' : ''}`"
+                      :aria-label="`${partNo(ci, j)} ${c.name}, ${c.value} {{ coin('name') }}${c.solved_by_me ? ', cracked' : ''}`"
                       @click="loadChallenge(c.id)"
                   >
                     <span class="bp-part__top">
@@ -140,7 +160,7 @@
                     </span>
                     <span class="bp-part__name" x-text="c.name"></span>
                     <span class="bp-part__foot">
-                      <span class="bp-part__value"><span x-text="c.value"></span><small>{% trans %}pts{% endtrans %}</small></span>
+                      <span class="bp-part__value"><span class="bp-coin">{{ coin('symbol') }}</span><span x-text="c.value"></span></span>
                       <span class="bp-part__solves" x-show="c.solves !== null && c.solves !== undefined">
                         <span x-text="c.solves"></span> <span x-show="c.solves === 1">{% trans %}solve{% endtrans %}</span><span x-show="c.solves !== 1">{% trans %}solves{% endtrans %}</span>
                       </span>
