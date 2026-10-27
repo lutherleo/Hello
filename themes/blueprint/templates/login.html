@@ -5,7 +5,7 @@
     <div class="container">
       <div class="bp-sheet-meta bp-label"><span>{% trans %}Sheet{% endtrans %} S-07</span></div>
       <h1>
-        {% trans %}Login{% endtrans %}
+        {% trans %}Check In{% endtrans %}
       </h1>
     </div>
   </div>
@@ -15,7 +15,7 @@
       <div class="col-md-8 offset-md-2 col-lg-6 offset-lg-3">
         <div class="bp-permit">
           <div class="bp-permit__head bp-label">
-            <span>{% trans %}Access permit{% endtrans %}</span>
+            <span>{% trans %}Crew credentials{% endtrans %}</span>
             <span>{{ Configs.ctf_name }}</span>
           </div>
 
@@ -61,8 +61,8 @@
 
           {% if registration_visible() %}
             <p class="mt-4 mb-0 pt-3 border-top text-muted">
-              {% trans %}No permit yet?{% endtrans %}
-              <a href="{{ url_for('auth.register') }}">{% trans %}Register{% endtrans %}</a>
+              {% trans %}Not on the crew yet?{% endtrans %}
+              <a href="{{ url_for('auth.register') }}">{% trans %}Join the crew{% endtrans %}</a>
             </p>
           {% endif %}
         </div>

@@ -18,6 +18,7 @@
       partNo(i, j) { return this.sectionKey(i) + '-' + String(j + 1).padStart(2, '0'); },
       slug(category) { return 'section-' + String(category).toLowerCase().replace(/[^a-z0-9]+/g, '-'); },
       locked(c) { return c.type === 'hidden'; },
+      role(category) { return window.bpCrewRole ? window.bpCrewRole(category) : ''; },
       scored() { return this.challenges.filter(c => c.solved_by_me).reduce((sum, c) => sum + (c.value || 0), 0); },
       total() { return this.challenges.reduce((sum, c) => sum + (c.value || 0), 0); },
       solvedCount(list) { return list.filter(c => c.solved_by_me).length; },
@@ -29,9 +30,10 @@
         <div class="container">
           <div class="bp-sheet-meta bp-label">
             <span>{% trans %}Sheet{% endtrans %} S-01</span>
-            <span x-show="loaded" x-cloak><span x-text="getCategories().length"></span> {% trans %}sections{% endtrans %} &middot; <span x-text="challenges.length"></span> {% trans %}parts{% endtrans %}</span>
+            <span>{% trans %}Target floor plan{% endtrans %}</span>
+            <span x-show="loaded" x-cloak><span x-text="getCategories().length"></span> {% trans %}specialties{% endtrans %} &middot; <span x-text="challenges.length"></span> {% trans %}targets{% endtrans %}</span>
           </div>
-          <h1>{% trans %}Challenges{% endtrans %}</h1>
+          <h1>{% trans %}The Job{% endtrans %}</h1>
         </div>
       </div>
 
@@ -46,7 +48,7 @@
           <div class="min-vh-50 d-flex align-items-center">
             <div class="text-center w-100">
               <i class="fas fa-circle-notch fa-spin fa-3x fa-fw spinner" aria-hidden="true"></i>
-              <span class="visually-hidden">{% trans %}Loading challenges{% endtrans %}</span>
+              <span class="visually-hidden">{% trans %}Loading the plans{% endtrans %}</span>
             </div>
           </div>
         </div>
@@ -54,19 +56,20 @@
         <div x-show="loaded" x-cloak>
           <template x-if="challenges.length === 0">
             <div class="bp-empty">
-              <p class="h3 mb-2">{% trans %}No parts on this sheet yet.{% endtrans %}</p>
-              <p class="mb-0">{% trans %}Challenges appear here once the competition opens.{% endtrans %}</p>
+              <p class="h3 mb-2">{% trans %}The board is empty.{% endtrans %}</p>
+              <p class="mb-0">{% trans %}Targets go up when the doors open. Get your crew ready.{% endtrans %}</p>
             </div>
           </template>
 
           <template x-if="challenges.length > 0">
             <div class="bp-board-head">
               {% if authed() %}
-              <div class="bp-gauge" role="group" aria-label="{% trans %}Points captured{% endtrans %}">
+              <div class="bp-gauge" role="group" aria-label="{% trans %}Your take{% endtrans %}">
+                <p class="bp-label mb-1">{% trans %}Your crew's take{% endtrans %}</p>
                 <div class="bp-gauge__figures">
                   <span class="bp-gauge__value" x-text="scored()"></span>
-                  <span class="bp-gauge__of">/ <span x-text="total()"></span> {% trans %}pts captured{% endtrans %}
-                    &middot; <span x-text="solvedCount(challenges)"></span>/<span x-text="challenges.length"></span> {% trans %}parts{% endtrans %}</span>
+                  <span class="bp-gauge__of">/ <span x-text="total()"></span> {% trans %}pts in the vault{% endtrans %}
+                    &middot; <span x-text="solvedCount(challenges)"></span>/<span x-text="challenges.length"></span> {% trans %}cracked{% endtrans %}</span>
                 </div>
                 <div class="bp-gauge__track">
                   <div class="bp-gauge__fill" :style="`width: ${percent()}%`" :data-empty="scored() === 0"></div>
@@ -78,14 +81,14 @@
               {% else %}
               <div>
                 <p class="bp-hero__lede mb-0">
-                  {% trans %}You are viewing the drawing without a permit.{% endtrans %}
-                  <a href="{{ url_for('auth.login', next=request.full_path) }}">{% trans %}Log in{% endtrans %}</a>
+                  {% trans %}You're casing the joint without credentials.{% endtrans %}
+                  <a href="{{ url_for('auth.login', next=request.full_path) }}">{% trans %}Check in{% endtrans %}</a>
                   {% trans %}to submit flags.{% endtrans %}
                 </p>
               </div>
               {% endif %}
 
-              <nav class="bp-index" aria-label="{% trans %}Sections{% endtrans %}">
+              <nav class="bp-index" aria-label="{% trans %}Specialties{% endtrans %}">
                 <template x-for="(category, ci) in getCategories()" :key="category">
                   <a :href="'#' + slug(category)">
                     <span class="bp-index__key" x-text="sectionKey(ci)"></span>
@@ -95,8 +98,8 @@
                 </template>
                 {% if authed() %}
                 <button type="button" :aria-pressed="hideSolved.toString()" @click="hideSolved = !hideSolved">
-                  <span x-show="!hideSolved">{% trans %}Hide captured{% endtrans %}</span>
-                  <span x-show="hideSolved">{% trans %}Show captured{% endtrans %}</span>
+                  <span x-show="!hideSolved">{% trans %}Hide cracked{% endtrans %}</span>
+                  <span x-show="hideSolved">{% trans %}Show cracked{% endtrans %}</span>
                 </button>
                 {% endif %}
               </nav>
@@ -108,9 +111,10 @@
               <header class="bp-section__head">
                 <span class="bp-section__key" x-text="sectionKey(ci)" aria-hidden="true"></span>
                 <h2 class="bp-section__title" x-text="category"></h2>
+                <span class="bp-section__role" x-show="role(category)" x-text="role(category)"></span>
                 <span class="bp-section__rule" aria-hidden="true"></span>
                 <span class="bp-section__count">
-                  <span x-text="solvedCount(getChallenges(category))"></span>/<span x-text="getChallenges(category).length"></span> {% trans %}captured{% endtrans %}
+                  <span x-text="solvedCount(getChallenges(category))"></span>/<span x-text="getChallenges(category).length"></span> {% trans %}cracked{% endtrans %}
                 </span>
               </header>
 
@@ -127,12 +131,12 @@
                       ]"
                       :value="c.id"
                       :disabled="locked(c)"
-                      :aria-label="`${partNo(ci, j)} ${c.name}, ${c.value} points${c.solved_by_me ? ', captured' : ''}`"
+                      :aria-label="`${partNo(ci, j)} ${c.name}, ${c.value} points${c.solved_by_me ? ', cracked' : ''}`"
                       @click="loadChallenge(c.id)"
                   >
                     <span class="bp-part__top">
                       <span class="bp-part__no" x-text="partNo(ci, j)"></span>
-                      <span x-show="locked(c)">{% trans %}locked{% endtrans %}</span>
+                      <span x-show="locked(c)">{% trans %}sealed{% endtrans %}</span>
                     </span>
                     <span class="bp-part__name" x-text="c.name"></span>
                     <span class="bp-part__foot">
@@ -141,7 +145,7 @@
                         <span x-text="c.solves"></span> <span x-show="c.solves === 1">{% trans %}solve{% endtrans %}</span><span x-show="c.solves !== 1">{% trans %}solves{% endtrans %}</span>
                       </span>
                     </span>
-                    <span class="bp-part__stamp" x-show="c.solved_by_me" aria-hidden="true">{% trans %}Captured{% endtrans %}</span>
+                    <span class="bp-part__stamp" x-show="c.solved_by_me" aria-hidden="true">{% trans %}Cracked{% endtrans %}</span>
                   </button>
                 </template>
               </div>

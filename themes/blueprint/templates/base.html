@@ -1,18 +1,18 @@
 {%- set bp = Configs.theme_settings if Configs.theme_settings is mapping else {} -%}
 {%- set bp_sheets = {
-  'views.static_html': ('S-00', 'Cover'),
-  'challenges.listing': ('S-01', 'Challenges'),
-  'scoreboard.listing': ('S-02', 'Scoreboard'),
+  'views.static_html': ('S-00', 'Briefing'),
+  'challenges.listing': ('S-01', 'The Job'),
+  'scoreboard.listing': ('S-02', 'The Take'),
   'users.listing': ('S-03', 'Users'),
   'users.public': ('S-03', 'User'),
   'users.private': ('S-03', 'Profile'),
-  'teams.listing': ('S-04', 'Teams'),
-  'teams.public': ('S-04', 'Team'),
-  'teams.private': ('S-04', 'Team'),
+  'teams.listing': ('S-04', 'Crews'),
+  'teams.public': ('S-04', 'Crew'),
+  'teams.private': ('S-04', 'Your crew'),
   'views.notifications': ('S-05', 'Notices'),
   'views.settings': ('S-06', 'Settings'),
-  'auth.login': ('S-07', 'Login'),
-  'auth.register': ('S-07', 'Register'),
+  'auth.login': ('S-07', 'Check-in'),
+  'auth.register': ('S-07', 'Recruiting'),
   'auth.reset_password': ('S-07', 'Reset'),
 } -%}
 {%- set bp_sheet = bp_sheets.get(request.endpoint, ('S-99', 'Detail')) -%}
@@ -23,13 +23,14 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <meta name="theme-color" content="#0f3c74">
+  <meta name="description" content="{{ Configs.ctf_name }}: the job briefing, the targets and the take.">
   <link rel="shortcut icon" href="{{ Configs.ctf_small_icon }}" type="image/x-icon">
 
   {{ meta | safe }}
 
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Barlow:ital,wght@0,400;0,500;0,600;1,400&family=IBM+Plex+Mono:wght@400;500&family=Permanent+Marker&display=swap">
 
   {% block stylesheets %}
     {{ Assets.css("assets/scss/main.scss") }}
@@ -87,7 +88,7 @@
   <div class="container">
     <dl class="bp-titleblock">
       <div class="bp-titleblock__title">
-        <dt>{% trans %}Project{% endtrans %}</dt>
+        <dt>{% trans %}The job{% endtrans %}</dt>
         <dd>{{ Configs.ctf_name }}</dd>
       </div>
       <div>
@@ -95,7 +96,7 @@
         <dd>{{ bp_sheet[0] }} &middot; {{ bp_sheet[1] }}</dd>
       </div>
       <div>
-        <dt>{% trans %}Drawn by{% endtrans %}</dt>
+        <dt>{% trans %}Planned by{% endtrans %}</dt>
         <dd>{{ bp.get('organizer', 'OSIRIS Lab') }}</dd>
       </div>
       <div>
@@ -107,11 +108,11 @@
         <dd><a href="https://ctfd.io">{% trans %}Powered by CTFd{% endtrans %}</a></dd>
       </div>
       <div>
-        <dt>{% trans %}Scale{% endtrans %}</dt>
-        <dd>1 : 1</dd>
+        <dt>{% trans %}Clearance{% endtrans %}</dt>
+        <dd>{% trans %}Crew only{% endtrans %}</dd>
       </div>
       <div>
-        <dt>{% trans %}Units{% endtrans %}</dt>
+        <dt>{% trans %}Currency{% endtrans %}</dt>
         <dd>{% trans %}points{% endtrans %}</dd>
       </div>
       <div>
