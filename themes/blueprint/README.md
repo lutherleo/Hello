@@ -41,6 +41,9 @@ relabelled; CTFd's scoring is unchanged.
 
 ### Quality of life
 
+- **Your haul is your real score:** the board's haul and cut come from
+  CTFd's own score (awards and hint costs included) and the cut divides by
+  the members the scoreboard counts, so both match the ledger.
 - **Search the board:** filter targets by name, specialty or tag. Press `/`
   to jump to the search box, Esc to clear it.
 - **Hide cracked** is remembered per browser.
@@ -140,6 +143,7 @@ python3 dev/preview_server.py . /path/to/CTFd 8771 --stress     # long names, 12
 python3 dev/preview_server.py . /path/to/CTFd 8772 --hidden-scores  # scoreboard hidden
 node dev/screenshots.js /tmp/shots     # every page, both prints, desktop + phone
 node dev/interactions.js /tmp/shots    # search, copy, ledger, skip link checks
+node dev/regressions.js                # bugs found in review stay fixed
 ```
 
 Both scripts need Playwright with Chromium.

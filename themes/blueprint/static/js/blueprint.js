@@ -164,17 +164,21 @@
   };
 
   // Copy to clipboard, with a fallback for non-secure origins.
-  function copyText(text) {
+  // `from` is the button that asked: the fallback textarea goes inside its
+  // modal, because Bootstrap's focus trap pulls focus out of anything else.
+  function copyText(text, from) {
     if (navigator.clipboard && window.isSecureContext) {
       return navigator.clipboard.writeText(text);
     }
     return new Promise(function (resolve, reject) {
+      var container = (from && from.closest(".modal")) || document.body;
       var area = document.createElement("textarea");
       area.value = text;
       area.setAttribute("readonly", "");
       area.style.position = "fixed";
       area.style.opacity = "0";
-      document.body.appendChild(area);
+      container.appendChild(area);
+      area.focus();
       area.select();
       var ok = false;
       try {
@@ -182,7 +186,8 @@
       } catch (e) {
         ok = false;
       }
-      document.body.removeChild(area);
+      container.removeChild(area);
+      if (from) from.focus();
       ok ? resolve() : reject();
     });
   }
@@ -201,7 +206,7 @@
       button.setAttribute("aria-label", "Copy connection info");
       button.setAttribute("aria-live", "polite");
       button.addEventListener("click", function () {
-        copyText(text).then(
+        copyText(text, button).then(
           function () {
             button.textContent = "Copied";
             setTimeout(function () {
@@ -439,8 +444,19 @@
     };
   }
 
+  // An organizer who assigns these globals (e.g. in the theme header) keeps
+  // their own options; otherwise the theme's are used.
   ["userScoreGraphChartOptions", "teamScoreGraphChartOptions"].forEach(function (name) {
-    Object.defineProperty(window, name, { configurable: true, get: profileChartOptions });
+    var override;
+    Object.defineProperty(window, name, {
+      configurable: true,
+      get: function () {
+        return override !== undefined ? override : profileChartOptions();
+      },
+      set: function (value) {
+        override = value;
+      },
+    });
   });
 
   document.addEventListener("alpine:init", function () {
