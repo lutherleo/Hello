@@ -32,13 +32,13 @@ html[data-bs-theme="dark"] {
   --bp-ground-raised: #134685;
   --bp-ink: #eef4fc;
   --bp-ink-muted: #b4c9e6;
-  --bp-ink-faint: #86a5cf;
+  --bp-ink-faint: #9db8dc;
   --bp-line: rgba(238, 244, 252, 0.62);
   --bp-line-soft: rgba(238, 244, 252, 0.28);
   --bp-grid-minor: rgba(238, 244, 252, 0.055);
   --bp-grid-major: rgba(238, 244, 252, 0.12);
   --bp-wash: rgba(238, 244, 252, 0.08);
-  --bp-redline: #ff6b5e;
+  --bp-redline: #ff8a7e;
   --bp-redline-ink: #2a0b08;
   --bp-redline-wash: rgba(255, 107, 94, 0.14);
   --bp-ok: #8ff0c2;
@@ -76,11 +76,11 @@ html[data-bs-theme="dark"] {
   --bs-border-color: var(--bp-line-soft);
   --bs-border-color-translucent: var(--bp-line-soft);
   --bs-dark-rgb: 10, 46, 92;
-  --bs-primary-rgb: 255, 107, 94;
+  --bs-primary-rgb: 255, 138, 126;
   --bs-secondary-rgb: 180, 201, 230;
   --bs-info-rgb: 156, 196, 255;
   --bs-success-rgb: 143, 240, 194;
-  --bs-danger-rgb: 255, 107, 94;
+  --bs-danger-rgb: 255, 138, 126;
   --bs-warning-rgb: 255, 214, 107;
   --bs-primary-text-emphasis: var(--bp-redline);
   --bs-success-text-emphasis: var(--bp-ok);
@@ -104,18 +104,18 @@ html[data-bs-theme="light"] {
   --bp-ground-raised: #fbf9f3;
   --bp-ink: #183f78;
   --bp-ink-muted: #44628f;
-  --bp-ink-faint: #6b83a8;
+  --bp-ink-faint: #526a90;
   --bp-line: rgba(24, 63, 120, 0.7);
   --bp-line-soft: rgba(24, 63, 120, 0.3);
   --bp-grid-minor: rgba(24, 63, 120, 0.05);
   --bp-grid-major: rgba(24, 63, 120, 0.11);
   --bp-wash: rgba(24, 63, 120, 0.07);
-  --bp-redline: #c8322a;
+  --bp-redline: #b82c25;
   --bp-redline-ink: #ffffff;
   --bp-redline-wash: rgba(200, 50, 42, 0.1);
-  --bp-ok: #1d7a52;
+  --bp-ok: #19704b;
   --bp-warn: #8a5a00;
-  --bp-focus: #c8322a;
+  --bp-focus: #b82c25;
   --bp-stain: rgba(120, 78, 36, 0.28);
 
   --bp-series-1: #c8322a;
@@ -143,16 +143,16 @@ html[data-bs-theme="light"] {
   --bs-link-color: var(--bp-ink);
   --bs-link-color-rgb: 24, 63, 120;
   --bs-link-hover-color: var(--bp-redline);
-  --bs-link-hover-color-rgb: 200, 50, 42;
+  --bs-link-hover-color-rgb: 184, 44, 37;
   --bs-code-color: var(--bp-redline);
   --bs-border-color: var(--bp-line-soft);
   --bs-border-color-translucent: var(--bp-line-soft);
   --bs-dark-rgb: 24, 63, 120;
-  --bs-primary-rgb: 200, 50, 42;
+  --bs-primary-rgb: 184, 44, 37;
   --bs-secondary-rgb: 68, 98, 143;
   --bs-info-rgb: 24, 63, 120;
-  --bs-success-rgb: 29, 122, 82;
-  --bs-danger-rgb: 200, 50, 42;
+  --bs-success-rgb: 25, 112, 75;
+  --bs-danger-rgb: 184, 44, 37;
   --bs-warning-rgb: 138, 90, 0;
   --bs-primary-text-emphasis: var(--bp-redline);
   --bs-success-text-emphasis: var(--bp-ok);
@@ -224,6 +224,53 @@ main {
   padding-top: var(--bp-nav-height);
   padding-bottom: 3rem;
   margin-bottom: 0;
+}
+
+/* The fixed navbar must never cover a focused or linked-to element. */
+html {
+  scroll-padding-top: calc(var(--bp-nav-height) + 1rem);
+}
+
+a,
+button,
+input,
+select,
+textarea,
+label,
+summary {
+  touch-action: manipulation;
+}
+
+html {
+  -webkit-tap-highlight-color: rgba(255, 138, 126, 0.2);
+}
+
+.bp-skip {
+  position: fixed;
+  top: 0.5rem;
+  left: 0.5rem;
+  z-index: 2000;
+  padding: 0.6rem 1rem;
+  background: var(--bp-redline);
+  color: var(--bp-redline-ink) !important;
+  font-family: var(--bp-font-display);
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  text-decoration: none !important;
+  transform: translateY(-200%);
+}
+
+.bp-skip:focus {
+  transform: none;
+}
+
+main:focus {
+  outline: none;
+}
+
+.modal {
+  overscroll-behavior: contain;
 }
 
 ::selection {
@@ -2510,4 +2557,11 @@ html[data-bs-theme="light"] .bp-crew__grid li {
 
 html[data-bs-theme="light"] [class*="col-"]:has(> p > .award-icon) > p {
   background: color-mix(in srgb, var(--bp-ground-raised) 88%, transparent);
+}
+
+/* The "/" shortcut hint means nothing without a keyboard. */
+@media (pointer: coarse) {
+  .bp-search__key {
+    display: none;
+  }
 }
