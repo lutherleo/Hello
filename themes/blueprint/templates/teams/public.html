@@ -1,4 +1,5 @@
 {% extends "base.html" %}
+{% from "macros/coin.html" import coin %}
 
 {% block content %}
   <div class="jumbotron">
@@ -74,8 +75,8 @@
 
       <h2 id="team-score" class="text-center">
         {% if score %}
-          {{ score }}
-          <small>points</small>
+          {{ coin('symbol') }}{{ score }}
+          <small>{{ coin('name') }}</small>
         {% endif %}
       </h2>
     </div>
@@ -140,7 +141,7 @@
                 <p class="text-center">{{ award.description }}</p>
               {% endif %}
 
-              <p class="text-center">{{ award.value }}</p>
+              <p class="text-center bp-award__value">{{ coin('symbol') }}{{ award.value }}</p>
             </div>
           {% endfor %}
         </div>
@@ -183,30 +184,33 @@
       <div class="clearfix"></div>
 
       <div class="row" x-data="TeamGraphs">
+        {# Wait for solves and fails to load; core renders these before the data arrives. #}
+        <template x-if="solves && fails">
+          <div class="col-12"><div class="row">
         <div class="col-md-6 d-none d-md-block d-lg-block py-4">
           <div class="progress">
             <div
               class="progress-bar"
               role="progressbar"
-              :style="{ width: `${getSolvePercentage()}%`, 'background-color': 'rgb(0, 209, 64)' }"
+              :style="{ width: `${getSolvePercentage()}%`, 'background-color': 'var(--bp-ok)' }"
             >
             </div>
             <div
               class="progress-bar"
               role="progressbar"
-              :style="{ width: `${getFailPercentage()}%`, 'background-color': 'rgb(207, 38, 0)' }"
+              :style="{ width: `${getFailPercentage()}%`, 'background-color': 'var(--bp-redline)' }"
             >
             </div>
           </div>
           <div class="ps-2 float-start">
             <svg height="16" width="16">
-              <circle cx="8" cy="8" r="5" fill="rgb(0, 209, 64)" />
+              <circle cx="8" cy="8" r="5" style="fill: var(--bp-ok)" />
             </svg>
             <small x-text="`Solves (${getSolvePercentage()}%)`"></small>
           </div>
           <div class="ps-2 float-start">
             <svg height="16" width="16">
-              <circle cx="8" cy="8" r="5" fill="rgb(207, 38, 0)" />
+              <circle cx="8" cy="8" r="5" style="fill: var(--bp-redline)" />
             </svg>
             <small x-text="`Fails (${getFailPercentage()}%)`"></small>
           </div>
@@ -227,10 +231,12 @@
               <svg height="16" width="16">
                 <circle cx="8" cy="8" r="5" :fill="category.color" />
               </svg>
-              <small x-text="`${category.name} (${category.percent}%)`"></small>
+              <small x-text="`${category.name} (${Math.round(category.percent * 10) / 10}%)`"></small>
             </div>
           </template>
         </div>
+          </div></div>
+        </template>
 
         <br class="clearfix">
 

@@ -7,6 +7,7 @@ plus Jinja2 only.
     python3 dev/preview_server.py . <path to a CTFd checkout> [port] [--anon|--empty]
 """
 import json
+import re
 import mimetypes
 import os
 import sys
@@ -14,7 +15,7 @@ import time
 from http.server import HTTPServer, SimpleHTTPRequestHandler
 from urllib.parse import urlparse, parse_qs
 
-from jinja2 import Environment, FileSystemLoader
+from jinja2 import ChainableUndefined, Environment, FileSystemLoader
 from markupsafe import Markup
 
 THEME = os.path.abspath(sys.argv[1])
@@ -97,8 +98,17 @@ def url_for(endpoint, **kw):
 
 
 class Field:
-    def __init__(self, name, label, type_="text"):
-        self.name, self._label, self.type = name, label, type_
+    def __init__(self, name, label=None, type_="text"):
+        self.name, self._label, self.type = name, label or name.replace("_", " ").title(), type_
+        self.description = ""
+        self.choices = [("", "--")]
+        self.data = None
+        if name in ("submit",):
+            self.type = "submit"
+        elif name in ("nonce",):
+            self.type = "hidden"
+        elif "password" in name or name == "confirm":
+            self.type = "password"
 
     def label(self, **kw):
         return Markup(f'<label for="{self.name}" class="{kw.get("class", "")}">{self._label}</label>')
@@ -109,17 +119,41 @@ class Field:
             return Markup(f'<input type="submit" id="{self.name}" class="{cls}" value="{self._label}">')
         if self.type == "hidden":
             return Markup(f'<input type="hidden" name="{self.name}" value="x">')
+        if "select" in cls or self.name in ("field", "country", "language", "captain_id", "expiration"):
+            opts = "".join(f"<option>{c[1] if isinstance(c, tuple) else c}</option>" for c in self.choices)
+            return Markup(f'<select id="{self.name}" name="{self.name}" class="{cls}">{opts}</select>')
+        if self.name == "description":
+            return Markup(f'<textarea id="{self.name}" name="{self.name}" class="{cls}"></textarea>')
         return Markup(f'<input type="{self.type}" id="{self.name}" name="{self.name}" class="{cls}">')
 
 
 class Form:
-    def __init__(self, *fields):
+    def __init__(self, *fields, **kw):
         for f in fields:
             setattr(self, f.name, f)
         self.extra = []
 
+    def __getattr__(self, name):
+        # Any field a template asks for exists.
+        if name.startswith("__"):
+            raise AttributeError(name)
+        f = Field(name)
+        setattr(self, name, f)
+        return f
+
+
+class AnyForms:
+    """Forms.<group>.<FormName>(**kw) returns a permissive Form."""
+
+    def __getattr__(self, name):
+        if name.startswith("__"):
+            raise AttributeError(name)
+        return lambda *a, **kw: Form()
+
 
 FORMS = Obj(
+    teams=AnyForms(),
+    users=AnyForms(),
     auth=Obj(
         LoginForm=lambda: Form(Field("name", "User Name or Email"), Field("password", "Password", "password"),
                                Field("submit", "Submit", "submit"), Field("nonce", "", "hidden")),
@@ -129,14 +163,18 @@ FORMS = Obj(
     )
 )
 
+setattr(FORMS, "self", AnyForms())  # "self" cannot be a keyword to Obj()
+
 env = Environment(
     loader=FileSystemLoader([os.path.join(THEME, "templates"),
                              os.path.join(CTFD, "CTFd", "plugins", "challenges", "assets")]),
     extensions=["jinja2.ext.i18n"],
     autoescape=True,
+    undefined=ChainableUndefined,
 )
 env.install_null_translations(newstyle=True)
 env.filters["pluralize"] = lambda n, s="s": "" if n == 1 else s
+env.filters["isoformat"] = lambda d: d if isinstance(d, str) else ""
 env.globals.update(
     Configs=CONFIGS,
     Assets=Assets(),
@@ -155,6 +193,9 @@ env.globals.update(
     get_mode_as_word=lambda plural=False, capitalize=False: "Team" if capitalize else "team",
     meta="",
     can_send_mail=lambda: False,
+    scores_visible=lambda: True,
+    accounts_visible=lambda: True,
+    lookup_country_code=lambda c: {"US": "United States", "DE": "Germany", "IN": "India", "BR": "Brazil"}.get(c, c),
 )
 
 CATS = {
@@ -184,6 +225,43 @@ if EMPTY:
 TEAMS = ["Segfault Society", "Null Pointer Club", "0xDEADBEEF", "Shell Shocked", "Rubber Duckies",
          "Off By One", "Heap Heroes", "Kernel Sanders", "Bit Flippers", "Tandon Tinkerers", "Packet Rats",
          "Root Cause"]
+
+
+class Page:
+    def __init__(self, items, page=1, pages=3):
+        self.items, self.page, self.pages, self.total = items, page, pages, len(items) * pages
+        self.next_num = page + 1 if page < pages else None
+
+
+AFFIL = ["NYU Tandon", "", "Universidade de Sao Paulo", "IIT Bombay", "TU Munich", ""]
+COUNTRY = ["US", None, "BR", "IN", "DE", "US"]
+
+
+def team_obj(i, name):
+    return Obj(id=i + 1, name=name, website="https://example.org" if i % 2 == 0 else "",
+               affiliation=AFFIL[i % 6], country=COUNTRY[i % 6], bracket_id=1 if i % 3 == 0 else None,
+               bracket=Obj(name="Student"), oauth_id=None, captain_id=7, fields=[],
+               members=[Obj(id=7 + m, name=n, score=s, bracket_id=None)
+                        for m, (n, s) in enumerate([("kernel_panic", 1450), ("nullbyte", 1100),
+                                                     ("ropchain", 800), ("hex_maniac", 242)])])
+
+
+def solves_list():
+    out = []
+    for c in CHALLENGES[:6]:
+        out.append(Obj(challenge=Obj(id=c["id"], name=c["name"], category=c["category"], value=c["value"]),
+                       date="2026-10-26T1%d:20:00+00:00" % (len(out)), user=Obj(name="kernel_panic", id=7)))
+    return out
+
+
+AWARDS = [Obj(name="First blood", value=50, category="Bonus", description="First crew to crack Kernel Draft",
+              icon="trophy", date="2026-10-26T12:00:00+00:00")]
+NOTIFICATIONS = [
+    Obj(id=2, title="Kernel Draft patched", date="2026-10-26T14:05:00+00:00",
+        html=Markup("<p>The service was restarted with a fix. Flags submitted before 14:00 still count.</p>")),
+    Obj(id=1, title="Doors are open", date="2026-10-25T23:40:00+00:00",
+        html=Markup("<p>Good luck, crews. Questions go to the help desk channel.</p>")),
+]
 
 
 def scoreboard():
@@ -296,6 +374,19 @@ class Handler(SimpleHTTPRequestHandler):
             return self.send_json({"success": True, "data": [] if EMPTY else scoreboard()})
         if path.startswith("/api/v1/scoreboard/top/"):
             return self.send_json({"success": True, "data": {} if EMPTY else top10()})
+        m = re.match(r"^/api/v1/(teams|users)/[^/]+/(solves|fails|awards)$", path)
+        if m:
+            kind = m.group(2)
+            if kind == "solves":
+                data = [{"challenge_id": x.challenge.id, "date": x.date,
+                         "challenge": {"id": x.challenge.id, "name": x.challenge.name,
+                                       "category": x.challenge.category, "value": x.challenge.value},
+                         "user": {"id": 7, "name": "kernel_panic"}} for x in solves_list()]
+            elif kind == "fails":
+                data = [{"challenge_id": 3, "date": "2026-10-26T10:05:00+00:00"}] * 4
+            else:
+                data = [{"name": "First blood", "value": 50, "date": "2026-10-26T12:00:00+00:00", "category": "Bonus"}]
+            return self.send_json({"success": True, "data": data, "meta": {"count": len(data)}})
         if path == "/api/v1/teams/me":
             return self.send_json({"success": True, "data": {"id": 3, "name": "Segfault Society",
                                                               "members": [7, 8, 9, 10]}})
@@ -314,8 +405,31 @@ class Handler(SimpleHTTPRequestHandler):
             return self.render("login.html", "auth.login", errors=[], infos=[])
         if path == "/register":
             return self.render("register.html", "auth.register", errors=[], infos=[])
+        if path == "/teams":
+            return self.render("teams/teams.html", "teams.listing", teams=Page([team_obj(i, n) for i, n in enumerate(TEAMS)]),
+                               q=None, field=None, prev_page="#", next_page="#")
+        if path == "/users":
+            users = [team_obj(i, n) for i, n in enumerate(["kernel_panic", "nullbyte", "ropchain", "hex_maniac",
+                                                           "a_very_long_username_that_keeps_going_and_going_forever"])]
+            return self.render("users/users.html", "users.listing", users=Page(users), q=None, field=None,
+                               prev_page="#", next_page="#")
+        if path == "/team":
+            team = team_obj(2, "0xDEADBEEF")
+            return self.render("teams/private.html", "teams.private", team=team, solves=solves_list(), awards=AWARDS,
+                               place="3rd", score=3592, errors=[], user=Obj(id=7))
+        if path == "/user":
+            u = team_obj(0, "kernel_panic")
+            u.team = Obj(name="0xDEADBEEF"); u.team_id = 3; u.solves = solves_list(); u.awards = AWARDS
+            acct = Obj(place="3rd", get_score=lambda admin=False: 1450)
+            return self.render("users/private.html", "users.private", user=u, account=acct, errors=[])
+        if path == "/settings":
+            return self.render("settings.html", "views.settings", name="kernel_panic", email="kp@example.org",
+                               website="", affiliation="NYU Tandon", country="US", language="en", tokens=[
+                                   Obj(id=1, created="2026-10-20T10:00:00+00:00", expiration="2026-11-20T10:00:00+00:00",
+                                       description="scripts")], errors=[])
         if path == "/notifications":
-            return self.render("notifications.html", "views.notifications", errors=[], infos=[])
+            return self.render("notifications.html", "views.notifications", notifications=NOTIFICATIONS,
+                               errors=[], infos=[])
         return self.render("errors/404.html", "x", code=404)
 
 

@@ -888,6 +888,11 @@ small.form-text {
   border-bottom: 1px solid var(--bp-line);
 }
 
+/* Long names without spaces must wrap, not push the table off a phone. */
+.table td {
+  overflow-wrap: anywhere;
+}
+
 .table td a {
   text-decoration-color: transparent !important;
   font-weight: 500;
@@ -2445,4 +2450,64 @@ html[data-bs-theme="light"] .bp-crew__grid li {
   font-family: var(--bp-font-marker);
   font-size: 0.8125rem;
   transform: rotate(-3deg);
+}
+
+/* --- Profile and team pages (core markup) ---------------------------------- */
+
+/* Core mixes pills, solid and outline badges at heading sizes; make them one tag style. */
+.jumbotron .badge {
+  font-family: var(--bp-font-mono);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  letter-spacing: 0.06em;
+  padding: 0.35rem 0.6rem;
+  border-radius: 0 !important;
+  border: 1px solid var(--bp-line);
+  background: transparent !important;
+  color: var(--bp-ink) !important;
+}
+
+.jumbotron h2 .badge,
+.jumbotron h3 .badge {
+  vertical-align: middle;
+}
+
+.jumbotron #team-place,
+.jumbotron #team-score,
+.jumbotron h2.text-center {
+  font-family: var(--bp-font-display);
+}
+
+/* Awards: one card each instead of loose centered paragraphs. */
+[class*="col-"]:has(> p > .award-icon) {
+  margin-bottom: 1rem;
+}
+
+[class*="col-"]:has(> p > .award-icon) > p {
+  margin: 0;
+  padding: 0.35rem 1rem;
+  border-left: 1px solid var(--bp-line);
+  border-right: 1px solid var(--bp-line);
+  background: color-mix(in srgb, var(--bp-ground-deep) 82%, transparent);
+  color: var(--bp-ink-muted);
+}
+
+[class*="col-"]:has(> p > .award-icon) > p:first-child {
+  padding-top: 1rem;
+  border-top: 1px solid var(--bp-line);
+  color: var(--bp-ink);
+}
+
+[class*="col-"]:has(> p > .award-icon) > p:last-child {
+  padding-bottom: 1rem;
+  border-bottom: 1px solid var(--bp-line);
+}
+
+.bp-award__value {
+  font-family: var(--bp-font-mono);
+  color: var(--bp-redline) !important;
+}
+
+html[data-bs-theme="light"] [class*="col-"]:has(> p > .award-icon) > p {
+  background: color-mix(in srgb, var(--bp-ground-raised) 88%, transparent);
 }
