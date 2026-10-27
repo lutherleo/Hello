@@ -2341,3 +2341,108 @@ html[data-bs-theme="light"] .bp-crew__grid li {
 .bp-score {
   white-space: nowrap;
 }
+
+
+/* --- Quality of life ------------------------------------------------------- */
+
+.bp-search {
+  position: relative;
+  max-width: 34rem;
+  margin: 1.5rem 0 0;
+}
+
+.bp-search .fa-search {
+  position: absolute;
+  left: 0.9rem;
+  top: 50%;
+  transform: translateY(-50%);
+  color: var(--bp-ink-faint);
+  pointer-events: none;
+}
+
+/* The id outranks the theme's generic input padding rule. */
+#bp-search-input {
+  padding-left: 2.5rem !important;
+  padding-right: 2.5rem !important;
+}
+
+.bp-search__key {
+  position: absolute;
+  right: 0.75rem;
+  top: 50%;
+  transform: translateY(-50%);
+  padding: 0.05rem 0.4rem;
+  border: 1px solid var(--bp-line-soft);
+  border-radius: 0;
+  background: transparent;
+  color: var(--bp-ink-faint);
+  font-family: var(--bp-font-mono);
+  font-size: 0.75rem;
+  box-shadow: none;
+}
+
+.bp-copy {
+  margin-left: 0.5rem;
+  padding: 0.35rem 0.7rem;
+  border: 1px solid var(--bp-line);
+  background: transparent;
+  color: var(--bp-ink);
+  font-family: var(--bp-font-mono);
+  font-size: 0.75rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+
+.bp-copy:hover {
+  background: var(--bp-ink);
+  color: var(--bp-ground);
+}
+
+.bp-clock {
+  font-family: var(--bp-font-mono) !important;
+  font-size: 0.75rem !important;
+  letter-spacing: 0.08em;
+  gap: 0.45rem !important;
+  white-space: nowrap;
+}
+
+.bp-clock[hidden] {
+  display: none !important;
+}
+
+.bp-clock__value {
+  text-transform: none;
+  color: var(--bp-ink);
+  font-variant-numeric: tabular-nums;
+}
+
+.bp-ledger-tools {
+  display: flex;
+  justify-content: flex-end;
+  margin-bottom: 0.75rem;
+}
+
+.table tr.bp-row--me > * {
+  --bs-table-bg-state: var(--bp-redline-wash);
+  box-shadow: inset 0 0 0 9999px var(--bp-redline-wash);
+}
+
+.table tr.bp-row--me > :first-child {
+  border-left: 4px solid var(--bp-redline);
+}
+
+#bp-me {
+  scroll-margin-top: calc(var(--bp-nav-height) + 2rem);
+}
+
+.bp-you {
+  display: inline-block;
+  margin-left: 0.5rem;
+  padding: 0.05rem 0.4rem;
+  border: 1.5px solid var(--bp-redline);
+  color: var(--bp-redline);
+  font-family: var(--bp-font-marker);
+  font-size: 0.8125rem;
+  transform: rotate(-3deg);
+}
