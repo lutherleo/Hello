@@ -131,6 +131,21 @@
     intro: "The Rookie",
   };
 
+  // A made-up wallet ID for each crew on the ledger: a stable hash of the
+  // account, shown for flavor. It is not an address on any real chain.
+  window.bpWallet = function (seed) {
+    var h1 = 0x811c9dc5;
+    var h2 = 0x9e3779b9;
+    var text = String(seed);
+    for (var i = 0; i < text.length; i++) {
+      var c = text.charCodeAt(i);
+      h1 = Math.imul(h1 ^ c, 0x01000193) >>> 0;
+      h2 = Math.imul(h2 ^ c, 0x5bd1e995) >>> 0;
+    }
+    var hex = (h1.toString(16).padStart(8, "0") + h2.toString(16).padStart(8, "0"));
+    return "hb_" + hex.slice(0, 6) + "…" + hex.slice(-4);
+  };
+
   window.bpCrewRole = function (category) {
     var key = String(category || "").trim().toLowerCase();
     var settings = window.init && window.init.themeSettings;

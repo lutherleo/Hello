@@ -1,0 +1,10 @@
+{#-
+  The in-game currency. Points are shown as this coin everywhere in the theme.
+  Organizers can rename it with theme_settings.currency, e.g.
+  {"currency": {"name": "Hashbar", "symbol": "Ħ"}}.
+-#}
+{%- macro coin(field) -%}
+  {%- set ts = Configs.theme_settings if Configs.theme_settings is mapping else {} -%}
+  {%- set c = ts.get('currency') if ts.get('currency') is mapping else {} -%}
+  {{- c.get(field) or {'name': 'Hashbar', 'symbol': 'Ħ'}[field] -}}
+{%- endmacro -%}
