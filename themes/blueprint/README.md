@@ -39,6 +39,23 @@ relabelled; CTFd's scoring is unchanged.
   revision, clearance, print, contact). Login is "Check in", registration
   is "Join the crew", error pages are a "Change of plan".
 
+### Quality of life
+
+- **Search the board:** filter targets by name, specialty or tag. Press `/`
+  to jump to the search box, Esc to clear it.
+- **Hide cracked** is remembered per browser.
+- **Copy button** beside a challenge's connection info.
+- **Live job clock** in the navbar on wide screens (starts in / ends in).
+- **The Ledger:** your crew's row is marked, "Find my crew" scrolls to it,
+  and "Find a crew…" filters the table. On phones the ledger drops the cut
+  and wallet columns so it fits without sideways scrolling.
+- **Solo mode:** with CTFd in users mode, the wording drops "crew" and the
+  split is hidden.
+- **Profile and team pages** use the theme's colors for core's graphs and
+  show scores in Hashbar.
+- **Accessibility:** a skip-to-content link, text contrast of at least 4.5:1
+  in both prints, labelled icon links, and reduced motion respected.
+
 ## Install
 
 1. Copy this folder into your CTFd install as `CTFd/themes/blueprint`.
@@ -109,11 +126,18 @@ plugins that extend it keep working; it is restyled by CSS only.
 
 ```bash
 cd themes/blueprint
-python3 dev/preview_server.py . /path/to/CTFd 8765            # logged in
-python3 dev/preview_server.py . /path/to/CTFd 8766 --anon     # logged out
-python3 dev/preview_server.py . /path/to/CTFd 8767 --empty    # no challenges
-node dev/screenshots.js /tmp/shots                             # needs Playwright
+python3 dev/preview_server.py . /path/to/CTFd 8765              # logged in
+python3 dev/preview_server.py . /path/to/CTFd 8766 --anon       # logged out
+python3 dev/preview_server.py . /path/to/CTFd 8767 --empty      # no challenges
+python3 dev/preview_server.py . /path/to/CTFd 8768 --ended      # CTF over
+python3 dev/preview_server.py . /path/to/CTFd 8769 --api-error  # challenges API 403
+python3 dev/preview_server.py . /path/to/CTFd 8770 --users      # solo mode
+python3 dev/preview_server.py . /path/to/CTFd 8771 --stress     # long names, 120 teams
+node dev/screenshots.js /tmp/shots     # every page, both prints, desktop + phone
+node dev/interactions.js /tmp/shots    # search, copy, ledger, skip link checks
 ```
+
+Both scripts need Playwright with Chromium.
 
 It needs a CTFd checkout only for the standard challenge plugin's
 `view.html`/`view.js`. It is a preview, not a test of CTFd itself: before the
