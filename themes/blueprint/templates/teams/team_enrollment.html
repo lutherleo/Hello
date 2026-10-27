@@ -3,42 +3,38 @@
 {% block content %}
   <div class="jumbotron">
     <div class="container">
-      <h1>{% trans %}Team{% endtrans %}</h1>
+      <div class="bp-sheet-meta bp-label"><span>{% trans %}Sheet{% endtrans %} S-04</span><span>{% trans %}Recruiting{% endtrans %}</span></div>
+      <h1>{% trans %}Assemble Your Crew{% endtrans %}</h1>
     </div>
   </div>
   <div class="container">
-    <div class="row">
-      <div class="col-md-6 offset-md-3 text-center">
-        <p class="h2">{% trans %}Welcome to{% endtrans %} {{ Configs.ctf_name }}!</p>
-        <p>
-          {% trans %}In order to participate you must either join or create a team.{% endtrans %}
-        </p>
-      </div>
-    </div>
+    {% include "components/errors.html" %}
+
+    <p class="bp-hero__lede mb-4">
+      {% trans %}Nobody cracks this vault alone. Start a crew and share its name and password with your specialists, or join one that is already recruiting.{% endtrans %}
+    </p>
 
     {% if integrations.mlc() %}
-      <div class="row">
-        <div class="col-md-6 offset-md-3 text-center">
-          <a class="btn btn-primary w-100" href="{{ url_for('auth.oauth_login') }}">{% trans %}Play with Official Team{% endtrans %}</a>
-        </div>
-      </div>
-      <div class="row">
-        <div class="mt-3 col-md-3 offset-md-3 text-center">
-          <a class="btn btn-outline-info w-100" href="{{ url_for('teams.join') }}">{% trans %}Join Unofficial Team{% endtrans %}</a>
-        </div>
-        <div class="mt-3 col-md-3 text-center">
-          <a class="btn btn-outline-info w-100" href="{{ url_for('teams.new') }}">{% trans %}Create Unofficial Team{% endtrans %}</a>
-        </div>
-      </div>
-    {% else %}
-      <div class="row">
-        <div class="mt-3 col-sm-4 col-md-3 offset-sm-2 offset-md-3 text-center">
-          <a class="btn btn-primary w-100" href="{{ url_for('teams.join') }}">{% trans %}Join Team{% endtrans %}</a>
-        </div>
-        <div class="mt-3 col-sm-4 col-md-3 text-center">
-          <a class="btn btn-primary w-100" href="{{ url_for('teams.new') }}">{% trans %}Create Team{% endtrans %}</a>
-        </div>
+      <div class="mb-4">
+        <a class="btn btn-primary" href="{{ url_for('auth.oauth_login') }}">{% trans %}Play with Official Team{% endtrans %}</a>
       </div>
     {% endif %}
+
+    <div class="bp-enroll">
+      <a class="bp-enroll__option" href="{{ url_for('teams.new') }}">
+        <span class="bp-label">{% trans %}Option A{% endtrans %}</span>
+        <span class="bp-enroll__title">{% if integrations.mlc() %}{% trans %}Create Unofficial Team{% endtrans %}{% else %}{% trans %}Start a crew{% endtrans %}{% endif %}</span>
+        <span class="bp-enroll__text">{% trans %}Pick a crew name and a password. You become the captain.{% endtrans %}</span>
+        <span class="bp-enroll__cta" aria-hidden="true">&rarr;</span>
+      </a>
+      <a class="bp-enroll__option" href="{{ url_for('teams.join') }}">
+        <span class="bp-label">{% trans %}Option B{% endtrans %}</span>
+        <span class="bp-enroll__title">{% if integrations.mlc() %}{% trans %}Join Unofficial Team{% endtrans %}{% else %}{% trans %}Join a crew{% endtrans %}{% endif %}</span>
+        <span class="bp-enroll__text">{% trans %}Your captain gives you the crew name and password.{% endtrans %}</span>
+        <span class="bp-enroll__cta" aria-hidden="true">&rarr;</span>
+      </a>
+    </div>
+
+    <p class="bp-enroll__note bp-marker">{% trans %}The haul is split evenly across the crew.{% endtrans %}</p>
   </div>
 {% endblock %}

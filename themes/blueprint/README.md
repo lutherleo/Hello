@@ -49,6 +49,10 @@ relabelled; CTFd's scoring is unchanged.
 - **The Ledger:** your crew's row is marked, "Find my crew" scrolls to it,
   and "Find a crew…" filters the table. On phones the ledger drops the cut
   and wallet columns so it fits without sideways scrolling.
+- **New players** land on "Assemble your crew" with two clear choices (start
+  or join a crew); the create, join and invite forms share the login panel.
+- **Hidden scores:** when score visibility hides the scoreboard, the ledger
+  says it is sealed instead of breaking or claiming it is empty.
 - **Solo mode:** with CTFd in users mode, the wording drops "crew" and the
   split is hidden.
 - **Profile and team pages** use the theme's colors for core's graphs and
@@ -133,6 +137,7 @@ python3 dev/preview_server.py . /path/to/CTFd 8768 --ended      # CTF over
 python3 dev/preview_server.py . /path/to/CTFd 8769 --api-error  # challenges API 403
 python3 dev/preview_server.py . /path/to/CTFd 8770 --users      # solo mode
 python3 dev/preview_server.py . /path/to/CTFd 8771 --stress     # long names, 120 teams
+python3 dev/preview_server.py . /path/to/CTFd 8772 --hidden-scores  # scoreboard hidden
 node dev/screenshots.js /tmp/shots     # every page, both prints, desktop + phone
 node dev/interactions.js /tmp/shots    # search, copy, ledger, skip link checks
 ```

@@ -5,7 +5,7 @@ mocked /api/v1 so the compiled core JS (Alpine, ctfd-js, ECharts) runs. Stdlib
 plus Jinja2 only.
 
     python3 dev/preview_server.py . <path to a CTFd checkout> [port]
-        [--anon] [--empty] [--ended] [--api-error] [--users] [--stress]
+        [--anon] [--empty] [--ended] [--api-error] [--users] [--stress] [--hidden-scores]
 """
 import json
 import re
@@ -28,6 +28,7 @@ ENDED = "--ended" in sys.argv        # the CTF finished an hour ago
 API_ERROR = "--api-error" in sys.argv  # /api/v1/challenges answers 403
 SOLO = "--users" in sys.argv         # user mode: no teams
 STRESS = "--stress" in sys.argv      # long names, many categories and teams
+HIDDEN = "--hidden-scores" in sys.argv  # score visibility set so the scoreboard API answers 403
 NOW = int(time.time())
 
 
@@ -94,6 +95,8 @@ ROUTES = {
     "auth.register": "/register",
     "auth.logout": "/logout",
     "auth.reset_password": "/reset_password",
+    "teams.join": "/teams/join",
+    "teams.new": "/teams/new",
     "auth.oauth_login": "/oauth",
     "admin.view": "/admin",
 }
@@ -413,6 +416,8 @@ class Handler(SimpleHTTPRequestHandler):
                      type_data={"id": "standard", "name": "standard",
                                 "scripts": {"view": "/plugins/challenges/assets/view.js"}})
             return self.send_json({"success": True, "data": d})
+        if path.startswith("/api/v1/scoreboard") and HIDDEN:
+            return self.send_json({"success": False, "errors": {"": ["Scores are currently hidden"]}}, 403)
         if path == "/api/v1/scoreboard":
             return self.send_json({"success": True, "data": [] if EMPTY else scoreboard()})
         if path.startswith("/api/v1/scoreboard/top/"):
@@ -445,7 +450,8 @@ class Handler(SimpleHTTPRequestHandler):
             errors = ["CSAW CTF '26 has not started yet"] if API_ERROR else []
             return self.render("challenges.html", "challenges.listing", errors=errors, infos=infos)
         if path == "/scoreboard":
-            return self.render("scoreboard.html", "scoreboard.listing", errors=[], infos=[])
+            errors = ["Scores are currently hidden"] if HIDDEN else []
+            return self.render("scoreboard.html", "scoreboard.listing", errors=errors, infos=[])
         if path == "/login":
             return self.render("login.html", "auth.login", errors=[], infos=[])
         if path == "/register":
@@ -472,6 +478,14 @@ class Handler(SimpleHTTPRequestHandler):
                                website="", affiliation="NYU Tandon", country="US", language="en", tokens=[
                                    Obj(id=1, created="2026-10-20T10:00:00+00:00", expiration="2026-11-20T10:00:00+00:00",
                                        description="scripts")], errors=[])
+        if path == "/team/enroll":  # what /team shows a player with no crew yet
+            return self.render("teams/team_enrollment.html", "teams.private", errors=[], infos=[])
+        if path == "/teams/join":
+            return self.render("teams/join_team.html", "teams.join", errors=[], infos=[])
+        if path == "/teams/new":
+            return self.render("teams/new_team.html", "teams.new", errors=[], infos=[])
+        if path == "/teams/invite":
+            return self.render("teams/invite.html", "teams.invite", team=team_obj(2, "0xDEADBEEF"), errors=[], infos=[])
         if path == "/notifications":
             return self.render("notifications.html", "views.notifications", notifications=NOTIFICATIONS,
                                errors=[], infos=[])
