@@ -367,6 +367,78 @@
     );
   }
 
+  // Profile and team pages keep core's ECharts "score over time" graph. Core
+  // deep-merges window.userScoreGraphChartOptions / teamScoreGraphChartOptions
+  // into its option, but its merge throws on nested objects the option lacks.
+  // Objects that do not inherit from Object are copied whole, not recursed, so
+  // every nested style below is built with bare(). ECharts itself calls
+  // hasOwnProperty on them, so their prototype provides just that.
+  var BARE_PROTO = Object.create(null);
+  BARE_PROTO.hasOwnProperty = Object.prototype.hasOwnProperty;
+
+  function bare(fields) {
+    var out = Object.create(BARE_PROTO);
+    for (var key in fields) {
+      out[key] = fields[key];
+    }
+    return out;
+  }
+
+  function cssValue(name) {
+    return getComputedStyle(document.documentElement).getPropertyValue(name).trim();
+  }
+
+  // Core labels the time axis with full Date strings; shorten them. Numbers
+  // (the value axis) pass through.
+  function shortDate(value) {
+    if (typeof value === "number") return value.toLocaleString();
+    var d = new Date(value);
+    if (isNaN(d.getTime())) return value;
+    return d.toLocaleString(undefined, { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+  }
+
+  function profileChartOptions() {
+    var ink = cssValue("--bp-ink");
+    var muted = cssValue("--bp-ink-muted");
+    var line = cssValue("--bp-line");
+    var grid = cssValue("--bp-grid-major");
+    var wash = cssValue("--bp-wash");
+    var mono = cssValue("--bp-font-mono");
+    var axis = function () {
+      return {
+        axisLine: bare({ show: true, lineStyle: { color: line } }),
+        axisLabel: bare({ color: muted, fontFamily: mono, formatter: shortDate }),
+        splitLine: bare({ lineStyle: { color: grid } }),
+      };
+    };
+    return {
+      backgroundColor: "transparent",
+      textStyle: bare({ color: ink, fontFamily: mono }),
+      title: { textStyle: bare({ color: ink, fontFamily: cssValue("--bp-font-display"), fontSize: 18 }) },
+      legend: { textStyle: bare({ color: muted }) },
+      tooltip: {
+        backgroundColor: cssValue("--bp-ground"),
+        borderColor: line,
+        textStyle: bare({ color: ink, fontFamily: mono }),
+      },
+      toolbox: { iconStyle: bare({ borderColor: muted }) },
+      xAxis: [axis()],
+      yAxis: [axis()],
+      dataZoom: [
+        {
+          borderColor: line,
+          fillerColor: wash,
+          textStyle: bare({ color: muted }),
+          dataBackground: bare({ lineStyle: { color: muted }, areaStyle: { color: wash } }),
+        },
+      ],
+    };
+  }
+
+  ["userScoreGraphChartOptions", "teamScoreGraphChartOptions"].forEach(function (name) {
+    Object.defineProperty(window, name, { configurable: true, get: profileChartOptions });
+  });
+
   document.addEventListener("alpine:init", function () {
     window.Alpine.data("BlueprintGraph", function () {
       return {

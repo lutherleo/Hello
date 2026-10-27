@@ -17,6 +17,12 @@ const shots = [
   { name: "login", url: "http://127.0.0.1:8766/login" },
   { name: "register", url: "http://127.0.0.1:8766/register" },
   { name: "404", url: "http://127.0.0.1:8765/nope" },
+  { name: "teams", url: "http://127.0.0.1:8765/teams" },
+  { name: "users", url: "http://127.0.0.1:8765/users" },
+  { name: "team-private", url: "http://127.0.0.1:8765/team" },
+  { name: "user-private", url: "http://127.0.0.1:8765/user" },
+  { name: "settings", url: "http://127.0.0.1:8765/settings" },
+  { name: "notifications", url: "http://127.0.0.1:8765/notifications" },
 ];
 
 const widths = [
