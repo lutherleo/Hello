@@ -1780,6 +1780,14 @@ html[data-bs-theme="light"] .bp-permit {
   fill: var(--bp-redline);
 }
 
+.bp-hero__drawing .bp-fill {
+  fill: var(--bp-ground);
+}
+
+.bp-hero__drawing text.bp-red-text {
+  fill: var(--bp-redline);
+}
+
 .bp-hero__drawing text {
   font-family: var(--bp-font-mono);
   font-size: 11px;
